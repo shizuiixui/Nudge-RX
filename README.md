@@ -1,20 +1,20 @@
-# Nudge-RX 💊
+# Nudge-RX 
 
 A modern, intuitive Flutter application designed to help users track their medications and set reliable reminders so they never miss a dose.
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-- **💊 Medication Management:** Easily add, edit, and categorize medications along with dosage instructions.
-- **⏰ Smart Reminders:** Customizable scheduled notifications to remind users when it's time to take their prescribed medicine.
-- **📊 Refill & Inventory Tracker:** Keep count of remaining pills and get alerts when stock is running low.
-- **📅 History & Adherence Logs:** View daily log entries of taken, skipped, or missed doses to monitor adherence history over time.
-- **📱 Cross-Platform Support:** Seamless experience across Android, iOS, and Web powered by Flutter.
+- **Medication Management:** Easily add, edit, and categorize medications along with dosage instructions.
+- **Smart Reminders:** Customizable scheduled notifications to remind users when it's time to take their prescribed medicine.
+- **Refill & Inventory Tracker:** Keep count of remaining pills and get alerts when stock is running low.
+- **History & Adherence Logs:** View daily log entries of taken, skipped, or missed doses to monitor adherence history over time.
+- **Cross-Platform Support:** Seamless experience across Android, iOS, and Web powered by Flutter.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -43,7 +43,7 @@ Ensure you have the following installed on your machine:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework:** [Flutter](https://flutter.dev/)
 - **Language:** [Dart](https://dart.dev/)
@@ -51,7 +51,3 @@ Ensure you have the following installed on your machine:
 - **Local Database & Storage:** Shared Preferences / Hive / Sqflite *(To be configured)*
 
 ---
-
-## 📄 License
-
-This project is open-source and available under the [MIT License](LICENSE).

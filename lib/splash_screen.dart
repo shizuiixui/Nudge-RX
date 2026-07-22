@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'main.dart';
+import 'landing_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,10 +16,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // Wait for 4 seconds then navigate to the home page
     Timer(const Duration(seconds: 4), () {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) =>
-              const MyHomePage(title: 'Flutter Demo Home Page'),
-        ),
+        MaterialPageRoute(builder: (context) => const LandingPage()),
       );
     });
   }

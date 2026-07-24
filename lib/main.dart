@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'core/services/supabase_service.dart';
 import 'features/auth/presentation/splash_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseService.initialize();
   runApp(const MyApp());
 }
 

@@ -47,7 +47,7 @@ Ensure you have the following installed on your machine:
 
 - **Framework:** [Flutter](https://flutter.dev/)
 - **Language:** [Dart](https://dart.dev/)
-- **State Management:** Provider / Riverpod / Bloc *(To be configured)*
-- **Local Database & Storage:** Shared Preferences / Hive / Sqflite *(To be configured)*
+- **State Management:** Provider / Riverpod / Bloc 
+- **Local Database & Storage:** Supabase PostgreSQL
 
 ---

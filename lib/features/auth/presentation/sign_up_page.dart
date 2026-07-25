@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/auth_provider.dart';
 
+import '/features/auth/presentation/login_page.dart';
+
 class SignUpPage extends ConsumerStatefulWidget {
   const SignUpPage({super.key});
 
@@ -265,6 +267,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       ),
                       GestureDetector(
                         onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
                           // TODO: Navigate to login page
                         },
                         child: Text(

@@ -17,13 +17,13 @@ class PrimaryButton extends StatelessWidget {
         decoration: ShapeDecoration(
           color: Color(0xFF3DBDEC),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.r),
+            borderRadius: BorderRadius.circular(30),
           ),
-          shadows: [
+          shadows: const [
             BoxShadow(
-              color: Color(0xFF000000),
-              blurRadius: 6.r,
-              offset: Offset(0, 4.h),
+              color: Color(0x3F000000),
+              blurRadius: 4,
+              offset: Offset(0, 4),
               spreadRadius: 0,
             ),
           ],

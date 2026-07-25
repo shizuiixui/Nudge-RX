@@ -55,6 +55,26 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
     }
   }
 
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, isSuccess: false, errorMessage: null);
+
+    try {
+      await _authRepository.signIn(
+        email: email,
+        password: password,
+      );
+      state = state.copyWith(isLoading: false, isSuccess: true);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
   /// Reset state back to initial (useful when navigating away).
   void resetState() {
     state = const AuthUiState();

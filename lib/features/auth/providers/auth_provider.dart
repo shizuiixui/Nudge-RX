@@ -41,37 +41,39 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
     state = state.copyWith(isLoading: true, isSuccess: false);
 
     try {
-      await _authRepository.signUp(
+      final response = await _authRepository.signUp(
         email: email,
         password: password,
         data: {'full_name': fullName},
       );
+
+      // Supabase returns an empty identities list when email is already registered
+      if (response.user?.identities?.isEmpty ?? true) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'An account with this email already exists.',
+        );
+        return;
+      }
+
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
-    state = state.copyWith(isLoading: true, isSuccess: false, errorMessage: null);
+  Future<void> signIn({required String email, required String password}) async {
+    state = state.copyWith(
+      isLoading: true,
+      isSuccess: false,
+      errorMessage: null,
+    );
 
     try {
-      await _authRepository.signIn(
-        email: email,
-        password: password,
-      );
+      await _authRepository.signIn(email: email, password: password);
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 

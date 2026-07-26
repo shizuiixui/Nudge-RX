@@ -54,14 +54,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
 
       if (next.isSuccess && (previous == null || !previous.isSuccess)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login Successful!'),
-            backgroundColor: Colors.green,
-          ),
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => _LoginSuccessDialog(parentContext: context),
         );
-
-        // TODO: Navigate to Home/Dashboard page
       }
     });
     final authState = ref.watch(authProvider);
@@ -242,6 +239,91 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _LoginSuccessDialog extends StatefulWidget {
+  final BuildContext parentContext;
+
+  const _LoginSuccessDialog({required this.parentContext});
+
+  @override
+  State<_LoginSuccessDialog> createState() => _LoginSuccessDialogState();
+}
+
+class _LoginSuccessDialogState extends State<_LoginSuccessDialog> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 4), () {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // close dialog
+
+      // TODO: Navigate to Home/Dashboard page
+      // Navigator.of(widget.parentContext).pushReplacement(
+      //   MaterialPageRoute(builder: (_) => const HomePage()),
+      // );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Success icon
+            Container(
+              width: 64.w,
+              height: 64.w,
+              decoration: const BoxDecoration(
+                color: Color(0xFF4CAF50),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.check_rounded,
+                color: Colors.white,
+                size: 36.sp,
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              'Success',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'You are now logged in.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 13.sp,
+                color: const Color(0xFF6C757D),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            // Loader
+            SizedBox(
+              width: 36.w,
+              height: 36.w,
+              child: const CircularProgressIndicator(
+                strokeWidth: 3,
+                color: Color(0xFF38C2EE),
+              ),
+            ),
+          ],
         ),
       ),
     );

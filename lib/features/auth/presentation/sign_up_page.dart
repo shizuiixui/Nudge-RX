@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '/core/utils/password_validator.dart';
+import '/core/widgets/password_strength_indicator.dart';
 import '../providers/auth_provider.dart';
 
 import '/features/auth/presentation/login_page.dart';
@@ -34,11 +36,13 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   void _handleSignUp() {
     if (!_formKey.currentState!.validate()) return;
 
-    ref.read(authProvider.notifier).signUp(
-      fullName: _fullNameController.text.trim(),
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-    );
+    ref
+        .read(authProvider.notifier)
+        .signUp(
+          fullName: _fullNameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
   }
 
   @override
@@ -104,9 +108,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                         Navigator.of(ctx).pop(); // close dialog
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const LoginPage(),
-                          ),
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -157,10 +159,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
 
                 // Logo
                 Center(
-                  child: Image.asset(
-                    'assets/images/Logo.png',
-                    height: 70.h,
-                  ),
+                  child: Image.asset('assets/images/Logo.png', height: 70.h),
                 ),
 
                 SizedBox(height: 28.h),
@@ -244,16 +243,12 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       });
                     },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
+                  onChanged: (_) => setState(() {}),
+                  validator: PasswordValidator.validate,
                 ),
+
+                // Password strength indicator
+                PasswordStrengthIndicator(password: _passwordController.text),
 
                 SizedBox(height: 16.h),
 
@@ -299,8 +294,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF38C2EE),
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor:
-                          const Color(0xFF38C2EE).withValues(alpha: 0.6),
+                      disabledBackgroundColor: const Color(
+                        0xFF38C2EE,
+                      ).withValues(alpha: 0.6),
                       elevation: 4,
                       shadowColor: const Color(0x6638C2EE),
                       shape: RoundedRectangleBorder(
@@ -344,8 +340,12 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
-                          // TODO: Navigate to login page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
+                          );
                         },
                         child: Text(
                           'Log in',
@@ -379,12 +379,14 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     Widget? suffixIcon,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
+    ValueChanged<String>? onChanged,
   }) {
     return TextFormField(
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
       validator: validator,
+      onChanged: onChanged,
       style: TextStyle(
         fontFamily: 'Poppins',
         fontSize: 14.sp,

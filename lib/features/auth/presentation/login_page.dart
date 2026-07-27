@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,9 +21,29 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool obscurePassword = true;
+  Timer? _emailSyncDebounce;
+
+  @override
+  void initState() {
+    super.initState();
+    emailController.addListener(_handleEmailChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(authProvider.notifier).syncLoginLockState(emailController.text);
+    });
+  }
+
+  void _handleEmailChanged() {
+    _emailSyncDebounce?.cancel();
+    _emailSyncDebounce = Timer(const Duration(milliseconds: 250), () {
+      if (!mounted) return;
+      ref.read(authProvider.notifier).syncLoginLockState(emailController.text);
+    });
+  }
 
   @override
   void dispose() {
+    _emailSyncDebounce?.cancel();
+    emailController.removeListener(_handleEmailChanged);
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -62,6 +84,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
     });
     final authState = ref.watch(authProvider);
+    final currentEmail = emailController.text.trim();
+    final isEmailLocked = authState.isLockedForEmail(currentEmail);
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFC),
       body: SafeArea(
@@ -157,6 +181,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                         SizedBox(height: 14.h),
 
+                        if (isEmailLocked) ...[
+                          Text(
+                            'Too many failed attempts. Try again after 30 minutes.',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFFE53935),
+                            ),
+                          ),
+                          SizedBox(height: 14.h),
+                        ],
+
                         // Forgot Password
                         Align(
                           alignment: Alignment.centerLeft,
@@ -188,8 +225,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             text: authState.isLoading
                                 ? "Logging in..."
                                 : "Login",
-                            onPressed: authState.isLoading
-                                ? () {}
+                            onPressed: (authState.isLoading || isEmailLocked)
+                                ? null
                                 : _submitLogin,
                           ),
                         ),

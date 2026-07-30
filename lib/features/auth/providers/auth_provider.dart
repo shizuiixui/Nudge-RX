@@ -12,15 +12,20 @@ const String _lockoutUntilKeyPrefix = 'auth_sign_in_lockout_until_';
 
 String _normalizeEmail(String email) => email.trim().toLowerCase();
 
-String _attemptsKey(String email) => '$_attemptsKeyPrefix${_normalizeEmail(email)}';
+String _attemptsKey(String email) =>
+    '$_attemptsKeyPrefix${_normalizeEmail(email)}';
 
-String _lockoutUntilKey(String email) => '$_lockoutUntilKeyPrefix${_normalizeEmail(email)}';
+String _lockoutUntilKey(String email) =>
+    '$_lockoutUntilKeyPrefix${_normalizeEmail(email)}';
 
 class _LockoutData {
   final int failedAttempts;
   final DateTime? lockoutUntil;
 
-  const _LockoutData({required this.failedAttempts, required this.lockoutUntil});
+  const _LockoutData({
+    required this.failedAttempts,
+    required this.lockoutUntil,
+  });
 }
 
 /// Represents the state of an authentication operation.
@@ -28,6 +33,7 @@ class AuthUiState {
   final bool isLoading;
   final String? errorMessage;
   final bool isSuccess;
+  final bool isOTPVerified;
   final String? lockedEmail;
   final DateTime? lockoutUntil;
   final int failedAttempts;
@@ -36,6 +42,7 @@ class AuthUiState {
     this.isLoading = false,
     this.errorMessage,
     this.isSuccess = false,
+    this.isOTPVerified = false,
     this.lockedEmail,
     this.lockoutUntil,
     this.failedAttempts = 0,
@@ -50,6 +57,7 @@ class AuthUiState {
     Object? lockedEmail = _sentinel,
     Object? lockoutUntil = _sentinel,
     int? failedAttempts,
+    bool? isOTPVerified,
   }) {
     return AuthUiState(
       isLoading: isLoading ?? this.isLoading,
@@ -64,6 +72,7 @@ class AuthUiState {
           ? this.lockoutUntil
           : lockoutUntil as DateTime?,
       failedAttempts: failedAttempts ?? this.failedAttempts,
+      isOTPVerified: isOTPVerified ?? this.isOTPVerified,
     );
   }
 
@@ -100,7 +109,9 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
     final normalizedEmail = _normalizeEmail(email);
     final attempts = prefs.getInt(_attemptsKey(normalizedEmail)) ?? 0;
     final lockoutRaw = prefs.getString(_lockoutUntilKey(normalizedEmail));
-    final lockoutUntil = lockoutRaw == null ? null : DateTime.tryParse(lockoutRaw);
+    final lockoutUntil = lockoutRaw == null
+        ? null
+        : DateTime.tryParse(lockoutRaw);
 
     if (lockoutUntil != null && !DateTime.now().isBefore(lockoutUntil)) {
       await prefs.remove(_attemptsKey(normalizedEmail));
@@ -176,8 +187,7 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
       _applyLockoutState(normalizedEmail, data);
       state = state.copyWith(
         isLoading: false,
-        errorMessage:
-            'Too many failed attempts. Try again after 30 minutes.',
+        errorMessage: 'Too many failed attempts. Try again after 30 minutes.',
       );
       return;
     }
@@ -198,8 +208,7 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
       );
       state = state.copyWith(
         isLoading: false,
-        errorMessage:
-            'Too many failed attempts. Try again after 30 minutes.',
+        errorMessage: 'Too many failed attempts. Try again after 30 minutes.',
       );
       return;
     }
@@ -213,6 +222,55 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
       lockedEmail: null,
       lockoutUntil: null,
     );
+  }
+
+  // Forgot Password Step 1: Request OTP
+  Future<void> requestPasswordReset(String email) async {
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      isSuccess: false,
+      isOTPVerified: false,
+    );
+
+    try {
+      await _authRepository.requestPasswordResetOTP(email: email);
+
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
+  }
+
+  // Step 2: Verify OTP
+  Future<void> verifyOTP({
+    required String email,
+    required String otpCode,
+  }) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      await _authRepository.verifyRecoveryOTP(email: email, otpCode: otpCode);
+      state = state.copyWith(isLoading: false, isOTPVerified: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
+  }
+
+  // Step 3: Update Password
+  Future<void> updatePassword(String newPassword) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      await _authRepository.updatePassword(newPassword: newPassword);
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        isOTPVerified: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
   }
 
   /// Sign up a new user with full name, email, and password.
@@ -252,8 +310,7 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
     if (state.isLockedForEmail(normalizedEmail)) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage:
-            'Too many failed attempts. Try again after 30 minutes.',
+        errorMessage: 'Too many failed attempts. Try again after 30 minutes.',
       );
       return;
     }
@@ -277,6 +334,10 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
   /// Reset state back to initial (useful when navigating away).
   void resetState() {
     state = const AuthUiState();
+  }
+
+  Future<void> verifyResetOtp({required String email, required String otpCode}) {
+    return verifyOTP(email: email, otpCode: otpCode);
   }
 }
 

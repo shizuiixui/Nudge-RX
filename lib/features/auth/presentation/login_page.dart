@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nudge_rx/features/auth/presentation/forgot_password.dart';
 import '/core/widgets/text_input_field.dart';
 import '../providers/auth_provider.dart';
 
@@ -199,7 +200,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           alignment: Alignment.centerLeft,
                           child: GestureDetector(
                             onTap: () {
-                              // TODO: Navigate to forgot password page
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ForgotPassword(
+                                    email: emailController.text.trim(),
+                                  ),
+                                ),
+                              );
                             },
                             child: const Text(
                               "Forgot Password?",

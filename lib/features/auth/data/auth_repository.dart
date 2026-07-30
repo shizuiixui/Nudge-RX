@@ -42,4 +42,23 @@ class AuthRepository {
   Future<void> signOut() async {
     await _supabaseClient.auth.signOut();
   }
+
+  /// Request password reset OTP
+  Future<void> requestPasswordResetOTP({required String email}) async {
+    await _supabaseClient.auth.resetPasswordForEmail(email);
+  }
+
+  Future<void> verifyRecoveryOTP({required String email, required String otpCode}) async {
+    await _supabaseClient.auth.verifyOTP(
+      email: email,
+      token: otpCode,
+      type: OtpType.recovery,
+    );
+  }
+
+  Future<void> updatePassword({required String newPassword}) async {
+    await _supabaseClient.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
+  }
 }

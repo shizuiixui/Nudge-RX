@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 
 import '/core/widgets/primary_button.dart';
 import '/features/auth/presentation/sign_up_page.dart';
+import '/features/homepage/presentation/homepage.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -303,14 +304,15 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog> {
   @override
   void initState() {
     super.initState();
+    // Capture navigators synchronously before the async gap.
+    final dialogNav = Navigator.of(context);
+    final pageNav = Navigator.of(widget.parentContext);
     Future.delayed(const Duration(seconds: 4), () {
       if (!mounted) return;
-      Navigator.of(context).pop(); // close dialog
-
-      // TODO: Navigate to Home/Dashboard page
-      // Navigator.of(widget.parentContext).pushReplacement(
-      //   MaterialPageRoute(builder: (_) => const HomePage()),
-      // );
+      dialogNav.pop(); // close dialog
+      pageNav.pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
     });
   }
 

@@ -263,7 +263,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                         controller: _fullNameController,
                         decoration: textInputField(
                           'Full Name',
-                          prefixIcon: Icons.person_outline,
+                          prefixIcon: Icons.person_rounded,
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -278,7 +278,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                         keyboardType: TextInputType.emailAddress,
                         decoration: textInputField(
                           'Enter your email',
-                          prefixIcon: Icons.email_outlined,
+                          prefixIcon: Icons.email_rounded,
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -298,13 +298,13 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                         decoration:
                             textInputField(
                               'Create Password',
-                              prefixIcon: Icons.lock_outline,
+                              prefixIcon: Icons.lock_rounded,
                             ).copyWith(
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
+                                      ? Icons.visibility_off_rounded
+                                      : Icons.visibility_rounded,
                                   color: const Color(0xFF9E9E9E),
                                   size: 20.sp,
                                 ),
@@ -328,13 +328,13 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                         decoration:
                             textInputField(
                               'Re-type Your Password',
-                              prefixIcon: Icons.lock_outline,
+                              prefixIcon: Icons.lock_rounded,
                             ).copyWith(
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscureConfirmPassword
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
+                                      ? Icons.visibility_off_rounded
+                                      : Icons.visibility_rounded,
                                   color: const Color(0xFF9E9E9E),
                                   size: 20.sp,
                                 ),

@@ -147,7 +147,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           keyboardType: TextInputType.emailAddress,
                           decoration: textInputField(
                             "name@example.com",
-                            prefixIcon: Icons.email,
+                            prefixIcon: Icons.email_rounded,
                           ),
                         ),
 

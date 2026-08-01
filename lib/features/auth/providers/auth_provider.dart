@@ -18,6 +18,22 @@ String _attemptsKey(String email) =>
 String _lockoutUntilKey(String email) =>
     '$_lockoutUntilKeyPrefix${_normalizeEmail(email)}';
 
+String _friendlySignInError(Object error) {
+  final message = error.toString();
+  final lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.contains('email not confirmed') ||
+      lowerMessage.contains('email not verified')) {
+    return 'Please verify your email before logging in.';
+  }
+
+  if (lowerMessage.contains('invalid login credentials')) {
+    return 'Invalid email or password.';
+  }
+
+  return message;
+}
+
 class _LockoutData {
   final int failedAttempts;
   final DateTime? lockoutUntil;
@@ -322,12 +338,12 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
     );
 
     try {
-      await _authRepository.signIn(email: email, password: password);
+      await _authRepository.signIn(email: normalizedEmail, password: password);
       await _clearStoredLockout(normalizedEmail);
       _cancelLockoutTimer();
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
-      await _handleFailedSignIn(normalizedEmail, e.toString());
+      await _handleFailedSignIn(normalizedEmail, _friendlySignInError(e));
     }
   }
 
@@ -336,7 +352,10 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
     state = const AuthUiState();
   }
 
-  Future<void> verifyResetOtp({required String email, required String otpCode}) {
+  Future<void> verifyResetOtp({
+    required String email,
+    required String otpCode,
+  }) {
     return verifyOTP(email: email, otpCode: otpCode);
   }
 }

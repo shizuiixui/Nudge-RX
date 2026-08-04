@@ -27,6 +27,7 @@ flutter:
   # Images
   assets:
     - assets/images/
+    - assets/images/navbar/
   
   # Fonts
   fonts:

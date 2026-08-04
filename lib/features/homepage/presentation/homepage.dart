@@ -6,6 +6,8 @@ import '../../inventory/presentation/add_edit_medicine_page.dart';
 import '../../inventory/presentation/inventory.dart';
 import '../../inventory/models/medication_model.dart';
 import '../../inventory/providers/medication_provider.dart';
+import '/../core/widgets/bottom_nav_bar.dart';
+import '/../core/widgets/custom_fab.dart';
 
 final firstNameProvider = Provider<String>((ref) {
   final user = Supabase.instance.client.auth.currentUser;
@@ -26,6 +28,8 @@ class _HomePageState extends ConsumerState<HomePage>
   late TabController _tabController;
   late DateTime _selectedDay;
   late DateTime _weekStart;
+
+  int _currentIndex = 0;
 
   static const _primaryBlue = Color(0xFF38C2EE);
   static const _bgColor = Color(0xFFEAF6FB);
@@ -110,26 +114,62 @@ class _HomePageState extends ConsumerState<HomePage>
 
     return Scaffold(
       backgroundColor: _bgColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(firstName),
-            _buildCalendarStrip(),
-            _buildTabBar(afternoonMeds, eveningMeds),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildMedList(morningMeds),
-                  _buildMedList(afternoonMeds),
-                  _buildMedList(eveningMeds),
-                ],
-              ),
-            ),
-          ],
-        ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _buildHomeContent(
+            firstName,
+            morningMeds,
+            afternoonMeds,
+            eveningMeds,
+          ), // Index 0
+          const InventoryPage(), // Index 1
+          const Center(child: Text('Status Screen')), // Index 2
+          const Center(child: Text('Profile Screen')), // Index 3
+        ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
+
+      // FAB
+      floatingActionButton: const CustomFAB(),
+      // Make the FAB appear in center of nav bar
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      // Nav Bar
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildHomeContent(
+    String firstName,
+    List<MedicationModel> morningMeds,
+    List<MedicationModel> afternoonMeds,
+    List<MedicationModel> eveningMeds,
+  ) {
+    return SafeArea(
+      child: Column(
+        children: [
+          _buildTopBar(firstName),
+          _buildCalendarStrip(),
+          _buildTabBar(afternoonMeds, eveningMeds),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildMedList(morningMeds),
+                _buildMedList(afternoonMeds),
+                _buildMedList(eveningMeds),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -424,88 +464,6 @@ class _HomePageState extends ConsumerState<HomePage>
       ),
     );
   }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 60.h,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              const _NavItem(
-                icon: Icons.home_rounded,
-                label: 'Home',
-                active: true,
-              ),
-              _NavItem(
-                icon: Icons.inventory_2_outlined,
-                label: 'Inventory',
-                active: false,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const InventoryPage(),
-                    ),
-                  );
-                },
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const AddEditMedicinePage(),
-                    ),
-                  );
-                },
-                child: Container(
-                  width: 52.w,
-                  height: 52.w,
-                  decoration: BoxDecoration(
-                    color: _primaryBlue,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: _primaryBlue.withValues(alpha: 0.4),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.qr_code_scanner_rounded,
-                    color: Colors.white,
-                    size: 26.sp,
-                  ),
-                ),
-              ),
-              const _NavItem(
-                icon: Icons.bar_chart_outlined,
-                label: 'Status',
-                active: false,
-              ),
-              const _NavItem(
-                icon: Icons.person_outline_rounded,
-                label: 'Profile',
-                active: false,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _MedCard extends ConsumerWidget {
@@ -547,21 +505,21 @@ class _MedCard extends ConsumerWidget {
                   color: status == MedicationStatus.taken
                       ? Colors.green.withValues(alpha: 0.15)
                       : status == MedicationStatus.skipped
-                          ? Colors.redAccent.withValues(alpha: 0.15)
-                          : _primaryBlue.withValues(alpha: 0.15),
+                      ? Colors.redAccent.withValues(alpha: 0.15)
+                      : _primaryBlue.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
                   status == MedicationStatus.taken
                       ? Icons.check_circle_rounded
                       : status == MedicationStatus.skipped
-                          ? Icons.cancel_rounded
-                          : Icons.medication_rounded,
+                      ? Icons.cancel_rounded
+                      : Icons.medication_rounded,
                   color: status == MedicationStatus.taken
                       ? Colors.green
                       : status == MedicationStatus.skipped
-                          ? Colors.redAccent
-                          : _primaryBlue,
+                      ? Colors.redAccent
+                      : _primaryBlue,
                   size: 26.sp,
                 ),
               ),
@@ -617,8 +575,11 @@ class _MedCard extends ConsumerWidget {
           if (status == MedicationStatus.taken) ...[
             Row(
               children: [
-                Icon(Icons.check_circle_rounded,
-                    color: Colors.green, size: 18.sp),
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.green,
+                  size: 18.sp,
+                ),
                 SizedBox(width: 6.w),
                 Text(
                   'Taken',
@@ -651,8 +612,11 @@ class _MedCard extends ConsumerWidget {
           ] else if (status == MedicationStatus.skipped) ...[
             Row(
               children: [
-                Icon(Icons.cancel_rounded,
-                    color: Colors.redAccent, size: 18.sp),
+                Icon(
+                  Icons.cancel_rounded,
+                  color: Colors.redAccent,
+                  size: 18.sp,
+                ),
                 SizedBox(width: 6.w),
                 Text(
                   'Skipped',
@@ -761,50 +725,6 @@ class _ActionButton extends StatelessWidget {
               fontSize: 13.sp,
               fontWeight: FontWeight.w600,
               color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-  final VoidCallback? onTap;
-
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.active,
-    this.onTap,
-  });
-
-  static const _primaryBlue = Color(0xFF38C2EE);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 22.sp,
-            color: active ? _primaryBlue : const Color(0xFFADB5BD),
-          ),
-          SizedBox(height: 2.h),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 9.sp,
-              color: active ? _primaryBlue : const Color(0xFFADB5BD),
-              fontWeight: active ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ],

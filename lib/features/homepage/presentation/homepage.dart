@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../inventory/presentation/add_edit_medicine_page.dart';
+import '../../inventory/models/medication_model.dart';
+import '../../inventory/providers/medication_provider.dart';
 
 final firstNameProvider = Provider<String>((ref) {
   final user = Supabase.instance.client.auth.currentUser;
@@ -10,29 +12,6 @@ final firstNameProvider = Provider<String>((ref) {
   if (rawName.isEmpty) return 'User';
   return rawName.split(' ').first;
 });
-
-/// Medication model – extend as needed when wire up a real data source.
-class Medication {
-  final String name;
-  final String dose;
-  final String time;
-  final String instruction;
-  final Color iconColor;
-
-  const Medication({
-    required this.name,
-    required this.dose,
-    required this.time,
-    required this.instruction,
-    required this.iconColor,
-  });
-}
-
-/// Mock providers – replace with real Riverpod / Supabase providers later.
-/// Currently return empty lists so the empty-state UI is shown.
-final morningMedsProvider = Provider<List<Medication>>((ref) => []);
-final afternoonMedsProvider = Provider<List<Medication>>((ref) => []);
-final eveningMedsProvider = Provider<List<Medication>>((ref) => []);
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -342,8 +321,8 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   Widget _buildTabBar(
-    List<Medication> afternoonMeds,
-    List<Medication> eveningMeds,
+    List<MedicationModel> afternoonMeds,
+    List<MedicationModel> eveningMeds,
   ) {
     return Container(
       color: _bgColor,
@@ -401,7 +380,7 @@ class _HomePageState extends ConsumerState<HomePage>
     ),
   );
 
-  Widget _buildMedList(List<Medication> meds) {
+  Widget _buildMedList(List<MedicationModel> meds) {
     if (meds.isEmpty) return _buildEmptyState();
     return ListView.separated(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -522,9 +501,11 @@ class _HomePageState extends ConsumerState<HomePage>
 }
 
 class _MedCard extends StatelessWidget {
-  final Medication med;
+  final MedicationModel med;
 
   const _MedCard({required this.med});
+
+  static const _primaryBlue = Color(0xFF38C2EE);
 
   @override
   Widget build(BuildContext context) {
@@ -551,12 +532,12 @@ class _MedCard extends StatelessWidget {
                 width: 44.w,
                 height: 44.w,
                 decoration: BoxDecoration(
-                  color: med.iconColor.withValues(alpha: 0.15),
+                  color: _primaryBlue.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
                   Icons.medication_rounded,
-                  color: med.iconColor,
+                  color: _primaryBlue,
                   size: 26.sp,
                 ),
               ),
@@ -575,7 +556,7 @@ class _MedCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      med.dose,
+                      med.dosage ?? '',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 12.sp,
@@ -590,7 +571,7 @@ class _MedCard extends StatelessWidget {
           ),
           SizedBox(height: 10.h),
           Text(
-            med.time,
+            med.formattedTime,
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 12.sp,
@@ -598,7 +579,7 @@ class _MedCard extends StatelessWidget {
             ),
           ),
           Text(
-            med.instruction,
+            med.frequencyDisplay,
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 12.sp,
@@ -624,7 +605,7 @@ class _MedCard extends StatelessWidget {
                 child: _ActionButton(
                   label: 'Done',
                   icon: Icons.check_rounded,
-                  color: const Color(0xFF38C2EE),
+                  color: _primaryBlue,
                   onTap: () {},
                 ),
               ),

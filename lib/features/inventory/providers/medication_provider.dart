@@ -1,0 +1,71 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../data/medication_repository.dart';
+import '../models/medication_model.dart';
+
+/// Repository singleton provider.
+final medicationRepositoryProvider = Provider<MedicationRepository>((ref) {
+  return MedicationRepository();
+});
+
+/// Main provider — holds the full list of the user's medications.
+final medicationsProvider =
+    AsyncNotifierProvider<MedicationsNotifier, List<MedicationModel>>(
+  MedicationsNotifier.new,
+);
+
+class MedicationsNotifier extends AsyncNotifier<List<MedicationModel>> {
+  @override
+  Future<List<MedicationModel>> build() async {
+    final repo = ref.read(medicationRepositoryProvider);
+    return repo.fetchMedications();
+  }
+
+  Future<void> addMedication(MedicationModel med) async {
+    final repo = ref.read(medicationRepositoryProvider);
+    final saved = await repo.addMedication(med);
+    final current = state.valueOrNull ?? [];
+    state = AsyncData([...current, saved]);
+  }
+
+  Future<void> updateMedication(MedicationModel med) async {
+    final repo = ref.read(medicationRepositoryProvider);
+    final updated = await repo.updateMedication(med);
+    final current = state.valueOrNull ?? [];
+    state = AsyncData([
+      for (final m in current)
+        if (m.id == updated.id) updated else m,
+    ]);
+  }
+
+  Future<void> deleteMedication(String id) async {
+    final repo = ref.read(medicationRepositoryProvider);
+    await repo.deleteMedication(id);
+    final current = state.valueOrNull ?? [];
+    state = AsyncData(current.where((m) => m.id != id).toList());
+  }
+
+  /// Re-fetch everything from Supabase.
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final repo = ref.read(medicationRepositoryProvider);
+      return repo.fetchMedications();
+    });
+  }
+}
+
+/// Derived providers that filter by time-of-day for the homepage tabs.
+final morningMedsProvider = Provider<List<MedicationModel>>((ref) {
+  final meds = ref.watch(medicationsProvider).valueOrNull ?? [];
+  return meds.where((m) => m.timeCategory == 'morning').toList();
+});
+
+final afternoonMedsProvider = Provider<List<MedicationModel>>((ref) {
+  final meds = ref.watch(medicationsProvider).valueOrNull ?? [];
+  return meds.where((m) => m.timeCategory == 'afternoon').toList();
+});
+
+final eveningMedsProvider = Provider<List<MedicationModel>>((ref) {
+  final meds = ref.watch(medicationsProvider).valueOrNull ?? [];
+  return meds.where((m) => m.timeCategory == 'evening').toList();
+});

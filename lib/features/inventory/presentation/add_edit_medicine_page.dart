@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/medication_model.dart';
+import '../providers/medication_provider.dart';
 
 enum MedicineType { pills, capsules, liquid, eyedrops, sachet }
 
@@ -47,6 +50,7 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
   late TextEditingController _nameCtrl;
   late TextEditingController _mgCtrl;
   late TextEditingController _doseCtrl;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -174,7 +178,7 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: types.length,
-        separatorBuilder: (_, __) => SizedBox(width: 12.w),
+        separatorBuilder: (_, _) => SizedBox(width: 12.w),
         itemBuilder: (_, i) {
           final type = types[i];
           final isSelected = _form.type == type;
@@ -639,34 +643,99 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
       width: double.infinity,
       height: 52.h,
       child: ElevatedButton(
-        onPressed: _onSave,
+        onPressed: _isSaving ? null : _onSave,
         style: ElevatedButton.styleFrom(
           backgroundColor: _primaryBlue,
           foregroundColor: Colors.white,
+          disabledBackgroundColor: _primaryBlue.withValues(alpha: 0.5),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(26.r),
           ),
           shadowColor: _primaryBlue.withValues(alpha: 0.4),
         ),
-        child: Text(
-          _isEdit ? 'Save Changes' : 'Add Medicine',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        child: _isSaving
+            ? SizedBox(
+                width: 22.w,
+                height: 22.w,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white,
+                ),
+              )
+            : Text(
+                _isEdit ? 'Save Changes' : 'Add Medicine',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
   }
 
-  void _onSave() {
-    _form.name = _nameCtrl.text.trim();
-    _form.milligrams = _mgCtrl.text.trim();
-    _form.dose = _doseCtrl.text.trim();
+  Future<void> _onSave() async {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a medicine name')),
+      );
+      return;
+    }
 
-    // TODO: persist via Riverpod / Supabase
-    Navigator.of(context).pop(_form);
+    setState(() => _isSaving = true);
+
+    try {
+      final userId = Supabase.instance.client.auth.currentUser!.id;
+
+      // Build dosage string from milligrams + dose count
+      final mg = _mgCtrl.text.trim();
+      final dose = _doseCtrl.text.trim();
+      String? dosage;
+      if (mg.isNotEmpty) {
+        dosage = '${mg}mg';
+        if (dose.isNotEmpty && dose != '1') dosage = '$dosage x $dose';
+      }
+
+      // Build frequency string from selected days
+      const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      final selectedDayNames = _form.selectedDays.toList()
+        ..sort();
+      final frequency = selectedDayNames.length == 5
+          ? 'Daily'
+          : selectedDayNames.map((i) => dayLabels[i]).join(',');
+
+      final med = MedicationModel(
+        userId: userId,
+        name: name,
+        dosage: dosage,
+        frequency: frequency,
+        reminderTime: _form.time,
+      );
+
+      await ref.read(medicationsProvider.notifier).addMedication(med);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$name added successfully!'),
+            backgroundColor: _primaryBlue,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 }

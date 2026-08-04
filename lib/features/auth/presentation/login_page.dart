@@ -119,7 +119,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                         // Title
                         Text(
-                          'Welcome Back!',
+                          'Welcome!',
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 28.sp,

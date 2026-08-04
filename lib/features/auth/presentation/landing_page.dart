@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'sign_up_page.dart';
+import 'login_page.dart';
 import '/core/widgets/primary_button.dart';
 
 class LandingPage extends StatelessWidget {
@@ -66,7 +66,7 @@ class LandingPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SignUpPage(),
+                        builder: (context) => const LoginPage(),
                       ),
                     );
                   },

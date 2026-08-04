@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:nudge_rx/core/widgets/primary_button.dart';
 import 'package:nudge_rx/core/widgets/text_input_field.dart';
+import 'package:nudge_rx/core/widgets/toggle_password.dart';
 import '/core/utils/password_validator.dart';
 import '/core/widgets/password_strength_indicator.dart';
 import '../providers/auth_provider.dart';
@@ -50,7 +51,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
-     // Listen for state changes
+    // Listen for state changes
     ref.listen<AuthUiState>(authProvider, (previous, next) {
       if (next.isSuccess) {
         showDialog(
@@ -300,14 +301,8 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                               'Create Password',
                               prefixIcon: Icons.lock_rounded,
                             ).copyWith(
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off_rounded
-                                      : Icons.visibility_rounded,
-                                  color: const Color(0xFF9E9E9E),
-                                  size: 20.sp,
-                                ),
+                              suffixIcon: TogglePassword(
+                                obscureText: _obscurePassword,
                                 onPressed: () {
                                   setState(() {
                                     _obscurePassword = !_obscurePassword;
@@ -330,14 +325,8 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                               'Re-type Your Password',
                               prefixIcon: Icons.lock_rounded,
                             ).copyWith(
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscureConfirmPassword
-                                      ? Icons.visibility_off_rounded
-                                      : Icons.visibility_rounded,
-                                  color: const Color(0xFF9E9E9E),
-                                  size: 20.sp,
-                                ),
+                              suffixIcon: TogglePassword(
+                                obscureText: _obscureConfirmPassword,
                                 onPressed: () {
                                   setState(() {
                                     _obscureConfirmPassword =
@@ -359,8 +348,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       const Spacer(),
                       SizedBox(
                         width: double.infinity,
-                        height: 50.h,
+                        height: 40.h,
                         child: PrimaryButton(
+                          isLoading: authState.isLoading,
                           text: authState.isLoading
                               ? 'Creating...'
                               : 'Create Account',

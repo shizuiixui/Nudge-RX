@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:nudge_rx/features/auth/presentation/forgot_password.dart';
+import 'package:nudge_rx/core/widgets/toggle_password.dart';
 import '/core/widgets/text_input_field.dart';
 import '../providers/auth_provider.dart';
 
@@ -164,14 +165,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 prefixIcon: Icons.lock_rounded,
                               ).copyWith(
                                 errorMaxLines: 3,
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    obscurePassword
-                                        ? Icons.visibility_off_rounded
-                                        : Icons.visibility_rounded,
-                                    color: Colors.grey,
-                                    size: 24.sp,
-                                  ),
+                                suffixIcon: TogglePassword(
+                                  obscureText: obscurePassword,
+                                  color: Colors.grey,
                                   onPressed: () {
                                     setState(() {
                                       obscurePassword = !obscurePassword;
@@ -210,10 +206,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 ),
                               );
                             },
-                            child: const Text(
+                            child: Text(
                               "Forgot Password?",
                               style: TextStyle(
-                                fontSize: 17,
+                                fontSize: (16.sp)
+                                    .clamp(15.0, 16.5)
+                                    .toDouble(),
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF3DBDEC),
@@ -229,7 +227,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         // Login Button
                         SizedBox(
                           width: double.infinity,
-                          height: 50.h,
+                          height: 40.h,
                           child: PrimaryButton(
                             text: authState.isLoading
                                 ? "Logging in..."
@@ -237,6 +235,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             onPressed: (authState.isLoading || isEmailLocked)
                                 ? null
                                 : _submitLogin,
+                            isLoading: authState.isLoading,
                           ),
                         ),
 

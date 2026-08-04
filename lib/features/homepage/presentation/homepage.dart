@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../inventory/presentation/add_edit_medicine_page.dart';
 
 final firstNameProvider = Provider<String>((ref) {
   final user = Supabase.instance.client.auth.currentUser;
@@ -474,7 +475,13 @@ class _HomePageState extends ConsumerState<HomePage>
                 active: false,
               ),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AddEditMedicinePage(),
+                    ),
+                  );
+                },
                 child: Container(
                   width: 52.w,
                   height: 52.w,

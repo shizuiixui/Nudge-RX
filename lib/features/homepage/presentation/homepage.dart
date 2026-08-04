@@ -508,7 +508,7 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 }
 
-class _MedCard extends StatelessWidget {
+class _MedCard extends ConsumerWidget {
   final MedicationModel med;
 
   const _MedCard({required this.med});
@@ -516,7 +516,11 @@ class _MedCard extends StatelessWidget {
   static const _primaryBlue = Color(0xFF38C2EE);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final medId = med.id ?? med.name;
+    final statusMap = ref.watch(medicationStatusProvider);
+    final status = statusMap[medId] ?? MedicationStatus.pending;
+
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
@@ -540,12 +544,24 @@ class _MedCard extends StatelessWidget {
                 width: 44.w,
                 height: 44.w,
                 decoration: BoxDecoration(
-                  color: _primaryBlue.withValues(alpha: 0.15),
+                  color: status == MedicationStatus.taken
+                      ? Colors.green.withValues(alpha: 0.15)
+                      : status == MedicationStatus.skipped
+                          ? Colors.redAccent.withValues(alpha: 0.15)
+                          : _primaryBlue.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
-                  Icons.medication_rounded,
-                  color: _primaryBlue,
+                  status == MedicationStatus.taken
+                      ? Icons.check_circle_rounded
+                      : status == MedicationStatus.skipped
+                          ? Icons.cancel_rounded
+                          : Icons.medication_rounded,
+                  color: status == MedicationStatus.taken
+                      ? Colors.green
+                      : status == MedicationStatus.skipped
+                          ? Colors.redAccent
+                          : _primaryBlue,
                   size: 26.sp,
                 ),
               ),
@@ -598,27 +614,118 @@ class _MedCard extends StatelessWidget {
           SizedBox(height: 12.h),
           Divider(height: 1, color: Colors.grey.shade200),
           SizedBox(height: 10.h),
-          Row(
-            children: [
-              Expanded(
-                child: _ActionButton(
-                  label: 'Skip',
-                  icon: Icons.close_rounded,
-                  color: Colors.redAccent,
-                  onTap: () {},
+          if (status == MedicationStatus.taken) ...[
+            Row(
+              children: [
+                Icon(Icons.check_circle_rounded,
+                    color: Colors.green, size: 18.sp),
+                SizedBox(width: 6.w),
+                Text(
+                  'Taken',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.green,
+                  ),
                 ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _ActionButton(
-                  label: 'Done',
-                  icon: Icons.check_rounded,
-                  color: _primaryBlue,
-                  onTap: () {},
+                const Spacer(),
+                GestureDetector(
+                  onTap: () {
+                    ref
+                        .read(medicationStatusProvider.notifier)
+                        .resetStatus(medId);
+                  },
+                  child: Text(
+                    'Undo',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12.sp,
+                      color: const Color(0xFF6C757D),
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ] else if (status == MedicationStatus.skipped) ...[
+            Row(
+              children: [
+                Icon(Icons.cancel_rounded,
+                    color: Colors.redAccent, size: 18.sp),
+                SizedBox(width: 6.w),
+                Text(
+                  'Skipped',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.redAccent,
+                  ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () {
+                    ref
+                        .read(medicationStatusProvider.notifier)
+                        .resetStatus(medId);
+                  },
+                  child: Text(
+                    'Undo',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12.sp,
+                      color: const Color(0xFF6C757D),
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _ActionButton(
+                    label: 'Skip',
+                    icon: Icons.close_rounded,
+                    color: Colors.redAccent,
+                    onTap: () {
+                      ref
+                          .read(medicationStatusProvider.notifier)
+                          .markAsSkipped(medId);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Skipped ${med.name}'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: _ActionButton(
+                    label: 'Done',
+                    icon: Icons.check_rounded,
+                    color: _primaryBlue,
+                    onTap: () {
+                      ref
+                          .read(medicationStatusProvider.notifier)
+                          .markAsTaken(medId);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Marked ${med.name} as Taken!'),
+                          backgroundColor: _primaryBlue,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

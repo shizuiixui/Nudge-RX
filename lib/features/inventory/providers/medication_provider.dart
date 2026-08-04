@@ -53,6 +53,33 @@ class MedicationsNotifier extends AsyncNotifier<List<MedicationModel>> {
   }
 }
 
+enum MedicationStatus { pending, taken, skipped }
+
+class MedicationStatusNotifier
+    extends StateNotifier<Map<String, MedicationStatus>> {
+  MedicationStatusNotifier() : super({});
+
+  void markAsTaken(String id) {
+    state = {...state, id: MedicationStatus.taken};
+  }
+
+  void markAsSkipped(String id) {
+    state = {...state, id: MedicationStatus.skipped};
+  }
+
+  void resetStatus(String id) {
+    final newState = Map<String, MedicationStatus>.from(state);
+    newState.remove(id);
+    state = newState;
+  }
+}
+
+final medicationStatusProvider =
+    StateNotifierProvider<
+      MedicationStatusNotifier,
+      Map<String, MedicationStatus>
+    >((ref) => MedicationStatusNotifier());
+
 final morningMedsProvider = Provider<List<MedicationModel>>((ref) {
   final meds = ref.watch(medicationsProvider).valueOrNull ?? [];
   return meds.where((m) => m.timeCategory == 'morning').toList();

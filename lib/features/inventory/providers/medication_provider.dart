@@ -7,11 +7,10 @@ final medicationRepositoryProvider = Provider<MedicationRepository>((ref) {
   return MedicationRepository();
 });
 
-/// Main provider — holds the full list of the user's medications.
 final medicationsProvider =
     AsyncNotifierProvider<MedicationsNotifier, List<MedicationModel>>(
-  MedicationsNotifier.new,
-);
+      MedicationsNotifier.new,
+    );
 
 class MedicationsNotifier extends AsyncNotifier<List<MedicationModel>> {
   @override
@@ -54,7 +53,6 @@ class MedicationsNotifier extends AsyncNotifier<List<MedicationModel>> {
   }
 }
 
-/// Derived providers that filter by time-of-day for the homepage tabs.
 final morningMedsProvider = Provider<List<MedicationModel>>((ref) {
   final meds = ref.watch(medicationsProvider).valueOrNull ?? [];
   return meds.where((m) => m.timeCategory == 'morning').toList();

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Model representing a medication row in the Supabase `medications` table.
 class MedicationModel {
   final String? id;
   final String userId;
@@ -20,7 +19,6 @@ class MedicationModel {
     this.createdAt,
   });
 
-  /// Parse a Supabase row into a [MedicationModel].
   factory MedicationModel.fromJson(Map<String, dynamic> json) {
     TimeOfDay? time;
     if (json['reminder_time'] != null) {
@@ -46,8 +44,6 @@ class MedicationModel {
     );
   }
 
-  /// Serialize to a map for Supabase insert/update.
-  /// Excludes `id` and `created_at` (handled by the database).
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{
       'user_id': userId,
@@ -56,24 +52,22 @@ class MedicationModel {
       'frequency': frequency,
       'reminder_time': reminderTime != null
           ? '${reminderTime!.hour.toString().padLeft(2, '0')}:'
-            '${reminderTime!.minute.toString().padLeft(2, '0')}:00'
+                '${reminderTime!.minute.toString().padLeft(2, '0')}:00'
           : null,
     };
     return map;
   }
 
-  /// Formatted time string for display (e.g. "9:00 AM").
   String get formattedTime {
     if (reminderTime == null) return '--:--';
-    final hour =
-        reminderTime!.hourOfPeriod == 0 ? 12 : reminderTime!.hourOfPeriod;
+    final hour = reminderTime!.hourOfPeriod == 0
+        ? 12
+        : reminderTime!.hourOfPeriod;
     final minute = reminderTime!.minute.toString().padLeft(2, '0');
     final period = reminderTime!.period == DayPeriod.am ? 'AM' : 'PM';
     return '$hour:$minute $period';
   }
 
-  /// Time-of-day category used by the homepage tabs.
-  /// Morning: before 12 PM · Afternoon: 12 PM – 5:59 PM · Evening: 6 PM+
   String get timeCategory {
     if (reminderTime == null) return 'morning';
     if (reminderTime!.hour < 12) return 'morning';
@@ -81,7 +75,6 @@ class MedicationModel {
     return 'evening';
   }
 
-  /// Parse a frequency string like "Mon,Tue,Wed" into display text.
   String get frequencyDisplay {
     if (frequency == null || frequency!.isEmpty) return 'Daily';
     return frequency!;

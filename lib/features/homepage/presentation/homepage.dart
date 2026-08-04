@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../inventory/presentation/add_edit_medicine_page.dart';
+import '../../inventory/presentation/inventory.dart';
 import '../../inventory/models/medication_model.dart';
 import '../../inventory/providers/medication_provider.dart';
 
@@ -448,10 +449,17 @@ class _HomePageState extends ConsumerState<HomePage>
                 label: 'Home',
                 active: true,
               ),
-              const _NavItem(
+              _NavItem(
                 icon: Icons.inventory_2_outlined,
                 label: 'Inventory',
                 active: false,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const InventoryPage(),
+                    ),
+                  );
+                },
               ),
               GestureDetector(
                 onTap: () {
@@ -658,36 +666,42 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool active;
+  final VoidCallback? onTap;
 
   const _NavItem({
     required this.icon,
     required this.label,
     required this.active,
+    this.onTap,
   });
 
   static const _primaryBlue = Color(0xFF38C2EE);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          size: 22.sp,
-          color: active ? _primaryBlue : const Color(0xFFADB5BD),
-        ),
-        SizedBox(height: 2.h),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 9.sp,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 22.sp,
             color: active ? _primaryBlue : const Color(0xFFADB5BD),
-            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
           ),
-        ),
-      ],
+          SizedBox(height: 2.h),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 9.sp,
+              color: active ? _primaryBlue : const Color(0xFFADB5BD),
+              fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

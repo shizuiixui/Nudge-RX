@@ -4,6 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/services/supabase_service.dart';
 import 'features/auth/presentation/splash_screen.dart';
 
+// App Router
+import 'package:nudge_rx/core/routes/app_router.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SupabaseService.initialize();
@@ -30,6 +33,8 @@ class MyApp extends StatelessWidget {
             ),
           ),
           home: const SplashScreen(),
+
+          routes: AppRouter.getRoutes(),
         );
       },
     );

@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+// Core Widgets
 import 'package:nudge_rx/core/widgets/primary_button.dart';
 import 'package:nudge_rx/core/widgets/text_input_field.dart';
 import 'package:nudge_rx/core/widgets/toggle_password.dart';
 import '/core/utils/password_validator.dart';
 import '/core/widgets/password_strength_indicator.dart';
+
+// ViewModel
 import '../providers/auth_provider.dart';
-import '/features/auth/presentation/login_page.dart';
+
+// Feature Widgets
+import 'widgets/signup_success_dialog.dart';
+import 'widgets/signup_error_dialog.dart';
 
 class SignUpPage extends ConsumerStatefulWidget {
   const SignUpPage({super.key});
@@ -51,172 +58,27 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
-    // Listen for state changes
+    // Observe ViewModel State
     ref.listen<AuthUiState>(authProvider, (previous, next) {
       if (next.isSuccess) {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (ctx) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 64.w,
-                    height: 64.w,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF38C2EE),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 36.sp,
-                    ),
-                  ),
-                  SizedBox(height: 20.h),
-                  Text(
-                    'Successful Account Creation',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'Your account has been created.\nYou can now log in.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 13.sp,
-                      color: const Color(0xFF6C757D),
-                    ),
-                  ),
-                  SizedBox(height: 24.h),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 46.h,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF38C2EE),
-                        foregroundColor: Colors.white,
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28.r),
-                        ),
-                      ),
-                      child: Text(
-                        'Continue to Login',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          builder: (ctx) => const SignUpSuccessDialog(),
         );
       }
-      if (next.errorMessage != null) {
+
+      if (next.errorMessage != null &&
+          next.errorMessage != previous?.errorMessage) {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (ctx) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 64.w,
-                    height: 64.w,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE53935),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.close_rounded,
-                      color: Colors.white,
-                      size: 36.sp,
-                    ),
-                  ),
-                  SizedBox(height: 20.h),
-                  Text(
-                    'Email Existing',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'Check your credentials.\nEmail is already registered.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 13.sp,
-                      color: const Color(0xFF6C757D),
-                    ),
-                  ),
-                  SizedBox(height: 24.h),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 46.h,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE53935),
-                        foregroundColor: Colors.white,
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28.r),
-                        ),
-                      ),
-                      child: Text(
-                        'Try Again',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          builder: (ctx) => SignupErrorDialog(message: next.errorMessage!),
         );
       }
     });
 
+    // UI View
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFC),
       body: SafeArea(
@@ -232,8 +94,6 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: 10.h),
-
-                      // Logo
                       Center(
                         child: Image.asset(
                           'assets/images/Logo.png',
@@ -260,6 +120,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                         ),
                       ),
                       SizedBox(height: 28.h),
+
                       TextFormField(
                         controller: _fullNameController,
                         decoration: textInputField(
@@ -274,6 +135,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                         },
                       ),
                       SizedBox(height: 16.h),
+
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
@@ -292,6 +154,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                         },
                       ),
                       SizedBox(height: 16.h),
+
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
@@ -312,11 +175,13 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                             ),
                         validator: PasswordValidator.validate,
                       ),
+
                       if (_passwordController.text.isNotEmpty)
                         PasswordStrengthIndicator(
                           password: _passwordController.text,
                         ),
                       SizedBox(height: 16.h),
+
                       TextFormField(
                         controller: _confirmPasswordController,
                         obscureText: _obscureConfirmPassword,
@@ -345,7 +210,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                           return null;
                         },
                       ),
+
                       const Spacer(),
+
                       SizedBox(
                         width: double.infinity,
                         height: 40.h,
@@ -358,6 +225,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                         ),
                       ),
                       SizedBox(height: 20.h),
+                      // Already have an account? Log In
                       Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -373,11 +241,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                             SizedBox(width: 6.w),
                             GestureDetector(
                               onTap: () {
-                                Navigator.push(
+                                Navigator.pushReplacementNamed(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const LoginPage(),
-                                  ),
+                                  '/login',
                                 );
                               },
                               child: Text(

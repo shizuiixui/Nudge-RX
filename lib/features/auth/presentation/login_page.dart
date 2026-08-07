@@ -1,16 +1,18 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:nudge_rx/features/auth/presentation/forgot_password.dart';
+
+// Core Widgets
 import 'package:nudge_rx/core/widgets/toggle_password.dart';
-import '/core/widgets/text_input_field.dart';
+import 'package:nudge_rx/core/widgets/text_input_field.dart';
+import 'package:nudge_rx/core/widgets/primary_button.dart';
+
+// Providers
 import '../providers/auth_provider.dart';
 
-import '/core/widgets/primary_button.dart';
-import '/features/auth/presentation/sign_up_page.dart';
-import '/features/homepage/presentation/homepage.dart';
+// Feature Widgets
+import 'widgets/login_success_dialog.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -23,6 +25,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _loginFormKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
   bool obscurePassword = true;
   Timer? _emailSyncDebounce;
 
@@ -65,11 +68,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen for state changes
+    // ViewModel State
     ref.listen<AuthUiState>(authProvider, (previous, next) {
       if (next.errorMessage != null &&
           next.errorMessage != previous?.errorMessage) {
-        // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
@@ -82,13 +84,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (ctx) => _LoginSuccessDialog(parentContext: context),
+          builder: (ctx) => LoginSuccessDialog(parentContext: context),
         );
       }
     });
+
     final authState = ref.watch(authProvider);
     final currentEmail = emailController.text.trim();
     final isEmailLocked = authState.isLockedForEmail(currentEmail);
+
+    // UI View
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFC),
       body: SafeArea(
@@ -107,18 +112,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: 20.h),
-
-                        // Logo
                         Center(
                           child: Image.asset(
                             'assets/images/Logo.png',
                             height: 70.h,
                           ),
                         ),
-
                         SizedBox(height: 28.h),
-
-                        // Title
                         Text(
                           'Welcome!',
                           style: TextStyle(
@@ -128,10 +128,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             color: Colors.black,
                           ),
                         ),
-
                         SizedBox(height: 6.h),
-
-                        // Subtitle
                         Text(
                           'Login to check your medication schedule.',
                           style: TextStyle(
@@ -140,7 +137,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             color: const Color(0xFF6C757D),
                           ),
                         ),
-
                         SizedBox(height: 28.h),
 
                         // Email Input Field
@@ -152,7 +148,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             prefixIcon: Icons.email_rounded,
                           ),
                         ),
-
                         SizedBox(height: 14.h),
 
                         // Password Input Field
@@ -176,7 +171,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 ),
                               ),
                         ),
-
                         SizedBox(height: 14.h),
 
                         if (isEmailLocked) ...[
@@ -197,31 +191,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           alignment: Alignment.centerLeft,
                           child: GestureDetector(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ForgotPassword(
-                                    email: emailController.text.trim(),
-                                  ),
-                                ),
-                              );
+                              Navigator.pushNamed(context, '/forgot-password');
                             },
                             child: Text(
                               "Forgot Password?",
                               style: TextStyle(
-                                fontSize: (16.sp)
-                                    .clamp(15.0, 16.5)
-                                    .toDouble(),
+                                fontSize: (16.sp).clamp(15.0, 16.5).toDouble(),
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF3DBDEC),
+                                color: const Color(0xFF3DBDEC),
                               ),
                             ),
                           ),
                         ),
 
                         const Spacer(),
-
                         SizedBox(height: 20.h),
 
                         // Login Button
@@ -238,7 +222,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             isLoading: authState.isLoading,
                           ),
                         ),
-
                         SizedBox(height: 20.h),
 
                         // Don't have an account? Sign Up
@@ -256,12 +239,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             SizedBox(width: 6.w),
                             GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const SignUpPage(),
-                                  ),
-                                );
+                                Navigator.pushNamed(context, '/signup');
                               },
                               child: Text(
                                 "Sign Up",
@@ -275,7 +253,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             ),
                           ],
                         ),
-
                         SizedBox(height: 20.h),
                       ],
                     ),
@@ -284,92 +261,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-}
-
-class _LoginSuccessDialog extends StatefulWidget {
-  final BuildContext parentContext;
-
-  const _LoginSuccessDialog({required this.parentContext});
-
-  @override
-  State<_LoginSuccessDialog> createState() => _LoginSuccessDialogState();
-}
-
-class _LoginSuccessDialogState extends State<_LoginSuccessDialog> {
-  @override
-  void initState() {
-    super.initState();
-    // Capture navigators synchronously before the async gap.
-    final dialogNav = Navigator.of(context);
-    final pageNav = Navigator.of(widget.parentContext);
-    Future.delayed(const Duration(seconds: 4), () {
-      if (!mounted) return;
-      dialogNav.pop(); // close dialog
-      pageNav.pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomePage()),
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Success icon
-            Container(
-              width: 64.w,
-              height: 64.w,
-              decoration: const BoxDecoration(
-                color: Color(0xFF4CAF50),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.check_rounded,
-                color: Colors.white,
-                size: 36.sp,
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              'Success',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'You are now logged in.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 13.sp,
-                color: const Color(0xFF6C757D),
-              ),
-            ),
-            SizedBox(height: 24.h),
-            // Loader
-            SizedBox(
-              width: 36.w,
-              height: 36.w,
-              child: const CircularProgressIndicator(
-                strokeWidth: 3,
-                color: Color(0xFF38C2EE),
-              ),
-            ),
-          ],
         ),
       ),
     );

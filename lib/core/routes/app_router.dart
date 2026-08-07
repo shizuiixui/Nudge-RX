@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nudge_rx/features/auth/presentation/email_verification.dart';
 import 'package:nudge_rx/features/auth/presentation/forgot_password.dart';
 import 'package:nudge_rx/features/auth/presentation/login_page.dart';
 import 'package:nudge_rx/features/auth/presentation/sign_up_page.dart';
@@ -13,6 +14,11 @@ class AppRouter {
       '/login': (context) => const LoginPage(),
       '/signup': (context) => const SignUpPage(),
       '/forgot-password': (context) => const ForgotPassword(email: ''),
+      '/email-verification': (context) {
+        final emailToVerify =
+            ModalRoute.of(context)!.settings.arguments as String? ?? '';
+        return EmailVerification(email: emailToVerify);
+      },
 
       '/home': (context) => const HomePage(),
       '/inventory': (context) => const InventoryPage(),

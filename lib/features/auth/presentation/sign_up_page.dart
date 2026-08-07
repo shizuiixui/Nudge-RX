@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Core Widgets
 import 'package:nudge_rx/core/widgets/primary_button.dart';
@@ -42,6 +43,14 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Supabase.instance.client.auth.signOut();
+    });
+  }
+
   void _handleSignUp() {
     if (!_formKey.currentState!.validate()) return;
 
@@ -61,10 +70,14 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     // Observe ViewModel State
     ref.listen<AuthUiState>(authProvider, (previous, next) {
       if (next.isSuccess) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => const SignUpSuccessDialog(),
+        ref.read(authProvider.notifier).resetState();
+
+        // Navigate to email verification page
+        Navigator.pushNamed(
+          context,
+          '/email-verification',
+          arguments: _emailController.text
+              .trim(), // Passes the email to the router
         );
       }
 

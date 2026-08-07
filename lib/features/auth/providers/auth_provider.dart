@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/auth_repository.dart';
 
@@ -240,6 +241,36 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
     );
   }
 
+  // Email Verification
+  Future<void> verifySignupOtp({
+    required String email,
+    required String otpCode,
+  }) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final response = await Supabase.instance.client.auth.verifyOTP(
+        type: OtpType.signup,
+        email: email,
+        token: otpCode,
+      );
+      if (response.session != null) {
+        state = state.copyWith(
+          isLoading: false,
+          isSuccess: true,
+          isOTPVerified: true,
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage:
+              "Verification failed. Please check the OTP and try again.",
+        );
+      }
+    } catch (error) {
+      state = state.copyWith(isLoading: false, errorMessage: error.toString());
+    }
+  }
+
   // Forgot Password Step 1: Request OTP
   Future<void> requestPasswordReset(String email) async {
     state = state.copyWith(
@@ -311,6 +342,11 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
           errorMessage: 'An account with this email already exists.',
         );
         return;
+      }
+
+      // Safety check
+      if (response.session != null) {
+        await Supabase.instance.client.auth.signOut();
       }
 
       state = state.copyWith(isLoading: false, isSuccess: true);

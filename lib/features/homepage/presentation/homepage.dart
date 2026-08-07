@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../inventory/presentation/add_edit_medicine_page.dart';
 import '../../inventory/presentation/inventory.dart';
 import '../../inventory/models/medication_model.dart';
 import '../../inventory/providers/medication_provider.dart';

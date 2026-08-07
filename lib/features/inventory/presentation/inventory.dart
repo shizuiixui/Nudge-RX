@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../homepage/presentation/homepage.dart';
 import '../models/medication_model.dart';
 import '../providers/medication_provider.dart';
-import 'add_edit_medicine_page.dart';
 
 class InventoryItem {
   final String id;
@@ -173,7 +171,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -439,131 +436,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               fontSize: 14.sp,
               color: const Color(0xFF6C757D),
               fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 60.h,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: Icons.home_rounded,
-                label: 'Home',
-                active: false,
-                onTap: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (_) => const HomePage()),
-                  );
-                },
-              ),
-              _NavItem(
-                icon: Icons.inventory_2_outlined,
-                label: 'Inventory',
-                active: true,
-                onTap: () {},
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const AddEditMedicinePage(),
-                    ),
-                  );
-                },
-                child: Container(
-                  width: 52.w,
-                  height: 52.w,
-                  decoration: BoxDecoration(
-                    color: _primaryBlue,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: _primaryBlue.withValues(alpha: 0.4),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.qr_code_scanner_rounded,
-                    color: Colors.white,
-                    size: 26.sp,
-                  ),
-                ),
-              ),
-              const _NavItem(
-                icon: Icons.bar_chart_outlined,
-                label: 'Status',
-                active: false,
-              ),
-              const _NavItem(
-                icon: Icons.person_outline_rounded,
-                label: 'Profile',
-                active: false,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-  final VoidCallback? onTap;
-
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.active,
-    this.onTap,
-  });
-
-  static const _primaryBlue = Color(0xFF38C2EE);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 22.sp,
-            color: active ? _primaryBlue : const Color(0xFFADB5BD),
-          ),
-          SizedBox(height: 2.h),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 9.sp,
-              color: active ? _primaryBlue : const Color(0xFFADB5BD),
-              fontWeight: active ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ],

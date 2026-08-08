@@ -321,12 +321,16 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
   }
 
   /// Sign up a new user with full name, email, and password.
-  Future<void> signUp({
+  Future<bool> signUp({
     required String fullName,
     required String email,
     required String password,
   }) async {
-    state = state.copyWith(isLoading: true, isSuccess: false);
+    state = state.copyWith(
+      isLoading: true,
+      isSuccess: false,
+      errorMessage: null,
+    );
 
     try {
       final response = await _authRepository.signUp(
@@ -341,7 +345,7 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
           isLoading: false,
           errorMessage: 'An account with this email already exists.',
         );
-        return;
+        return false;
       }
 
       // Safety check
@@ -349,9 +353,13 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
         await Supabase.instance.client.auth.signOut();
       }
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      // Keep sign-up success separate from generic isSuccess to avoid
+      // triggering login listeners that also watch this provider.
+      state = state.copyWith(isLoading: false);
+      return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return false;
     }
   }
 

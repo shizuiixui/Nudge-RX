@@ -70,6 +70,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     // ViewModel State
     ref.listen<AuthUiState>(authProvider, (previous, next) {
+      // Ignore state updates while this route is not the active page.
+      if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+
       if (next.errorMessage != null &&
           next.errorMessage != previous?.errorMessage) {
         ScaffoldMessenger.of(context).showSnackBar(

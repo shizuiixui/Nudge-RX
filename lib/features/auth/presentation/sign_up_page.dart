@@ -50,16 +50,24 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     });
   }
 
-  void _handleSignUp() {
+  Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
 
-    ref
+    final didSignUp = await ref
         .read(authProvider.notifier)
         .signUp(
           fullName: _fullNameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
+
+    if (!mounted || !didSignUp) return;
+
+    Navigator.pushNamed(
+      context,
+      '/email-verification',
+      arguments: _emailController.text.trim(),
+    );
   }
 
   @override
@@ -68,18 +76,6 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
 
     // Observe ViewModel State
     ref.listen<AuthUiState>(authProvider, (previous, next) {
-      if (next.isSuccess) {
-        ref.read(authProvider.notifier).resetState();
-
-        // Navigate to email verification page
-        Navigator.pushNamed(
-          context,
-          '/email-verification',
-          arguments: _emailController.text
-              .trim(), // Passes the email to the router
-        );
-      }
-
       if (next.errorMessage != null &&
           next.errorMessage != previous?.errorMessage) {
         showDialog(

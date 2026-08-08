@@ -14,7 +14,6 @@ import '/core/widgets/password_strength_indicator.dart';
 import '../providers/auth_provider.dart';
 
 // Feature Widgets
-import 'widgets/signup_success_dialog.dart';
 import 'widgets/signup_error_dialog.dart';
 
 class SignUpPage extends ConsumerStatefulWidget {

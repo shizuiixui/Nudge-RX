@@ -81,20 +81,26 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     super.dispose();
   }
 
-  List<InventoryItem> _getDisplayItems(List<MedicationModel> userMeds) {
+  List<InventoryItem> _getDisplayItems(
+    List<MedicationModel> userMeds,
+    Map<String, MedicationStatus> statusMap,
+  ) {
     List<InventoryItem> items = [];
 
     if (userMeds.isNotEmpty) {
       for (int i = 0; i < userMeds.length; i++) {
         final med = userMeds[i];
+        final medId = med.id ?? med.name;
+        final isTaken = statusMap[medId] == MedicationStatus.taken;
         items.add(
           InventoryItem(
-            id: med.id ?? '$i',
+            id: medId,
             name: med.name,
             dosageInfo: med.dosage ?? '500 mg, 1 capsule',
             takenCount: (i * 7 + 12) % 30,
             totalCount: 30,
-            isLowStock: i == 2,
+            isCompleted: isTaken,
+            isLowStock: i == 2 && !isTaken,
             iconData: i % 2 == 0
                 ? Icons.medication_rounded
                 : Icons.vaccines_rounded,
@@ -129,7 +135,8 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
   Widget build(BuildContext context) {
     final medsAsync = ref.watch(medicationsProvider);
     final userMeds = medsAsync.valueOrNull ?? [];
-    final displayItems = _getDisplayItems(userMeds);
+    final statusMap = ref.watch(medicationStatusProvider);
+    final displayItems = _getDisplayItems(userMeds, statusMap);
 
     return Scaffold(
       backgroundColor: _bgColor,

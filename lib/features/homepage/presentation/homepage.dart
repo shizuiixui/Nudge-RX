@@ -116,6 +116,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final morningMeds = ref.watch(morningMedsProvider);
     final afternoonMeds = ref.watch(afternoonMedsProvider);
     final eveningMeds = ref.watch(eveningMedsProvider);
+    final statusMap = ref.watch(medicationStatusProvider);
 
     return Scaffold(
       backgroundColor: _bgColor,
@@ -128,6 +129,7 @@ class _HomePageState extends ConsumerState<HomePage>
             morningMeds,
             afternoonMeds,
             eveningMeds,
+            statusMap,
           ), // Index 0
           const InventoryPage(), // Index 1
           const Center(child: Text('Status Screen')), // Index 2
@@ -156,13 +158,14 @@ class _HomePageState extends ConsumerState<HomePage>
     List<MedicationModel> morningMeds,
     List<MedicationModel> afternoonMeds,
     List<MedicationModel> eveningMeds,
+    Map<String, MedicationStatus> statusMap,
   ) {
     return SafeArea(
       child: Column(
         children: [
           _buildTopBar(firstName),
           _buildCalendarStrip(),
-          _buildTabBar(afternoonMeds, eveningMeds),
+          _buildTabBar(afternoonMeds, eveningMeds, statusMap),
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -359,7 +362,12 @@ class _HomePageState extends ConsumerState<HomePage>
   Widget _buildTabBar(
     List<MedicationModel> afternoonMeds,
     List<MedicationModel> eveningMeds,
+    Map<String, MedicationStatus> statusMap,
   ) {
+    bool hasPending(List<MedicationModel> meds) => meds.any(
+          (m) => statusMap[m.id ?? m.name] != MedicationStatus.taken,
+        );
+
     return Container(
       color: _bgColor,
       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -389,7 +397,7 @@ class _HomePageState extends ConsumerState<HomePage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text('Afternoon'),
-                if (afternoonMeds.isNotEmpty) ...[SizedBox(width: 4.w), _dot()],
+                if (afternoonMeds.isNotEmpty && hasPending(afternoonMeds)) ...[SizedBox(width: 4.w), _dot()],
               ],
             ),
           ),
@@ -398,7 +406,7 @@ class _HomePageState extends ConsumerState<HomePage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text('Evening'),
-                if (eveningMeds.isNotEmpty) ...[SizedBox(width: 4.w), _dot()],
+                if (eveningMeds.isNotEmpty && hasPending(eveningMeds)) ...[SizedBox(width: 4.w), _dot()],
               ],
             ),
           ),

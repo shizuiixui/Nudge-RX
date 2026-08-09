@@ -391,6 +391,16 @@ class AuthNotifier extends StateNotifier<AuthUiState> {
     }
   }
 
+  Future<void> signOut() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      await _authRepository.signOut();
+      state = const AuthUiState();
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
+  }
+
   /// Reset state back to initial (useful when navigating away).
   void resetState() {
     state = const AuthUiState();

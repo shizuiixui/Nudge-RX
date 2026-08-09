@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 // Screens & Layout
 import '../../inventory/presentation/inventory.dart';
 import '../../status/presentation/status.dart';
+import '../../profile/presentation/profile.dart';
 import '/core/widgets/bottom_nav_bar.dart';
 import '/core/widgets/custom_fab.dart';
 
@@ -134,7 +135,7 @@ class _HomePageState extends ConsumerState<HomePage>
           ), // Index 0
           const InventoryPage(), // Index 1
           const StatusPage(), // Index 2
-          const Center(child: Text('Profile Screen')), // Index 3
+          const ProfilePage(), // Index 3
         ],
       ),
 

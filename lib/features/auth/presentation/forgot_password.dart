@@ -63,18 +63,32 @@ class _ForgotPasswordState extends ConsumerState<ForgotPassword> {
     super.dispose();
   }
 
+  // Handle sending reset email
   void _handleSendEmail() async {
     if (_emailFormKey.currentState!.validate()) {
-      await ref
-          .read(authProvider.notifier)
-          .requestPasswordReset(emailController.text.trim());
+      setState(() {
+        _isLoading = true;
+      });
 
-      if (ref.read(authProvider).errorMessage == null) {
-        _controller.nextPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-        _startResendCountdown();
+      try {
+        await Future.delayed(const Duration(milliseconds: 1800));
+        await ref
+            .read(authProvider.notifier)
+            .requestPasswordReset(emailController.text.trim());
+        if (!mounted) return;
+        if (ref.read(authProvider).errorMessage == null) {
+          _controller.nextPage(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+          _startResendCountdown();
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -90,18 +104,40 @@ class _ForgotPasswordState extends ConsumerState<ForgotPassword> {
       return;
     }
 
-    // Trigger OTP verification
-    await ref
-        .read(authProvider.notifier)
-        .verifyResetOtp(email: emailController.text.trim(), otpCode: otp);
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await Future.delayed(const Duration(milliseconds: 1800));
+
+      // Trigger OTP verification
+      await ref
+          .read(authProvider.notifier)
+          .verifyResetOtp(email: emailController.text.trim(), otpCode: otp);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   // Handle password reset
   void _handleResetPassword() async {
     if (_passwordFormKey.currentState!.validate()) {
-      await ref
-          .read(authProvider.notifier)
-          .updatePassword(_passwordController.text);
+      setState(() {
+        _isLoading = true;
+      });
+      try {
+        await Future.delayed(const Duration(milliseconds: 1800));
+        await ref
+            .read(authProvider.notifier)
+            .updatePassword(_passwordController.text);
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -352,7 +388,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPassword> {
                         ? const Center(child: CircularProgressIndicator())
                         : PrimaryButton(
                             text: "Verify",
-                            onPressed: _handleVerify,
+                            onPressed: _isLoading ? null : _handleVerify,
                             isLoading: _isLoading,
                           ),
                   ),
@@ -501,12 +537,13 @@ class _ForgotPasswordState extends ConsumerState<ForgotPassword> {
                         width: double.infinity,
                         height: 50.h,
                         child: PrimaryButton(
-                          text: "Continue",
-                          isLoading: _isLoading,
-                          onPressed: () {
-                            if (authState.isLoading) return;
-                            _handleResetPassword();
-                          },
+                          text: (_isLoading || authState.isLoading)
+                              ? "Saving..."
+                              : "Continue",
+                          isLoading: _isLoading || authState.isLoading,
+                          onPressed: (_isLoading || authState.isLoading)
+                              ? null
+                              : _handleResetPassword,
                         ),
                       ),
                       SizedBox(height: 24.h),
@@ -553,12 +590,22 @@ class _ForgotPasswordState extends ConsumerState<ForgotPassword> {
                     child: PrimaryButton(
                       isLoading: _isLoading,
                       text: "Continue",
-                      onPressed: () {
-                        ref.read(authProvider.notifier).resetState();
-                        Navigator.of(
-                          context,
-                        ).popUntil((route) => route.isFirst);
-                      },
+                      onPressed: _isLoading
+                          ? null
+                          : () async {
+                              setState(() {
+                                _isLoading = true;
+                              });
+                              await Future.delayed(
+                                const Duration(milliseconds: 1800),
+                              );
+                              if (!mounted) return;
+
+                              ref.read(authProvider.notifier).resetState();
+                              Navigator.of(
+                                context,
+                              ).popUntil((route) => route.isFirst);
+                            },
                     ),
                   ),
                 ],

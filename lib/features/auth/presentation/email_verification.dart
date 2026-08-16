@@ -14,6 +14,7 @@ class EmailVerification extends ConsumerStatefulWidget {
 }
 
 class _EmailVerificationState extends ConsumerState<EmailVerification> {
+  bool _isLoading = false;
   final List<TextEditingController> _otpControllers = List.generate(
     6,
     (_) => TextEditingController(),
@@ -27,7 +28,7 @@ class _EmailVerificationState extends ConsumerState<EmailVerification> {
     super.dispose();
   }
 
-  void _handleVerify() {
+  void _handleVerify() async {
     String otp = _otpControllers.map((c) => c.text).join();
     if (otp.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -35,9 +36,20 @@ class _EmailVerificationState extends ConsumerState<EmailVerification> {
       );
       return;
     }
-    ref
-        .read(authProvider.notifier)
-        .verifySignupOtp(email: widget.email, otpCode: otp);
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await Future.delayed(const Duration(milliseconds: 1800));
+      await ref
+          .read(authProvider.notifier)
+          .verifySignupOtp(email: widget.email, otpCode: otp);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -164,7 +176,7 @@ class _EmailVerificationState extends ConsumerState<EmailVerification> {
                 width: double.infinity,
                 height: 50.h,
                 child: PrimaryButton(
-                  isLoading: authState.isLoading,
+                  isLoading: _isLoading || authState.isLoading,
                   text: authState.isLoading ? "Verifying..." : "Verify",
                   onPressed: authState.isLoading ? null : _handleVerify,
                 ),

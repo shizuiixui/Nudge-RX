@@ -3,8 +3,32 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'login_page.dart';
 import '/core/widgets/primary_button.dart';
 
-class LandingPage extends StatelessWidget {
+class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
+
+  @override
+  State<LandingPage> createState() => _LandingPageState();
+}
+
+class _LandingPageState extends State<LandingPage> {
+  bool _isLoading = false;
+
+  Future<void> _handleGetStarted() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      await Future.delayed(const Duration(milliseconds: 1800));
+
+      if (!mounted) return;
+
+      await Navigator.pushReplacementNamed(context, '/login');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,16 +85,9 @@ class LandingPage extends StatelessWidget {
                 width: double.infinity,
                 height: 40.h,
                 child: PrimaryButton(
-                  isLoading: false,
-                  text: "Get Started",
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginPage(),
-                      ),
-                    );
-                  },
+                  isLoading: _isLoading,
+                  text: _isLoading ? "Loading..." : "Get Started",
+                  onPressed: _isLoading ? null : _handleGetStarted,
                 ),
               ),
               SizedBox(height: 10.h),

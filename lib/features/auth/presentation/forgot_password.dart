@@ -581,6 +581,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPassword> {
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w400,
                     ),
+                    textAlign: TextAlign.center,
                   ),
 
                   SizedBox(height: 60.h),

@@ -93,11 +93,13 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
                       selectedDays: _form.selectedDays,
                       onDayToggled: (i) {
                         setState(() {
-                          if (_form.selectedDays.contains(i)) {
-                            _form.selectedDays.remove(i);
+                          final updatedDays = _form.selectedDays.toSet();
+                          if (updatedDays.contains(i)) {
+                            updatedDays.remove(i);
                           } else {
-                            _form.selectedDays.add(i);
+                            updatedDays.add(i);
                           }
+                          _form.selectedDays = updatedDays;
                         });
                       },
                       primaryColor: _primaryBlue,
@@ -144,11 +146,10 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
             child: Container(
               width: 36.w,
               height: 36.w,
-              alignment:
-                  Alignment.center,
+              alignment: Alignment.center,
               child: Icon(
                 Icons.arrow_back_ios_new_rounded,
-                size: 16.sp,
+                size: 24.sp,
                 color: Colors.black87,
               ),
             ),

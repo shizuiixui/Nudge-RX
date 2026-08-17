@@ -308,15 +308,15 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
       final mg = _mgCtrl.text.trim();
       final dose = _doseCtrl.text.trim();
       String? dosage;
-      if (mg.isNotEmpty) {
+      if (mg.isNotEmpty && dose.isNotEmpty) {
+        dosage = '$mg${cfg.leftSuffix} - $dose ${cfg.rightSuffix}';
+      } else if (mg.isNotEmpty) {
         dosage = '$mg${cfg.leftSuffix}';
-        if (dose.isNotEmpty && dose != '1') {
-          dosage = '$dosage x $dose ${cfg.rightSuffix}';
-        }
+      } else if (dose.isNotEmpty) {
+        dosage = '$dose ${cfg.rightSuffix}';
       }
-
       // Build frequency string from selected days
-      const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       final selectedDayNames = _form.selectedDays.toList()..sort();
       final frequency = selectedDayNames.length == 5
           ? 'Daily'

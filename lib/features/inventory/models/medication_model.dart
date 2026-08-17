@@ -7,6 +7,7 @@ class MedicationModel {
   final String? dosage;
   final String? frequency;
   final TimeOfDay? reminderTime;
+  final String? mealInstruction;
   final DateTime? createdAt;
 
   const MedicationModel({
@@ -16,6 +17,7 @@ class MedicationModel {
     this.dosage,
     this.frequency,
     this.reminderTime,
+    this.mealInstruction,
     this.createdAt,
   });
 
@@ -38,6 +40,7 @@ class MedicationModel {
       dosage: json['dosage'] as String?,
       frequency: json['frequency'] as String?,
       reminderTime: time,
+      mealInstruction: json['meal_instruction'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String)
           : null,
@@ -50,6 +53,7 @@ class MedicationModel {
       'name': name,
       'dosage': dosage,
       'frequency': frequency,
+      'meal_instruction': mealInstruction,
       'reminder_time': reminderTime != null
           ? '${reminderTime!.hour.toString().padLeft(2, '0')}:'
                 '${reminderTime!.minute.toString().padLeft(2, '0')}:00'
@@ -91,7 +95,9 @@ class MedicationModel {
     if (doseStr.contains('sachet')) {
       return 'assets/images/AddMedicine/Sachet.png';
     }
-    if (doseStr.endsWith('g') && !doseStr.endsWith('mg') && !doseStr.endsWith('mcg')) {
+    if (doseStr.endsWith('g') &&
+        !doseStr.endsWith('mg') &&
+        !doseStr.endsWith('mcg')) {
       return 'assets/images/AddMedicine/Sachet.png';
     }
     if (doseStr.contains('capsule')) {
@@ -107,6 +113,7 @@ class MedicationModel {
     String? dosage,
     String? frequency,
     TimeOfDay? reminderTime,
+    String? mealInstruction,
     DateTime? createdAt,
   }) {
     return MedicationModel(
@@ -116,6 +123,7 @@ class MedicationModel {
       dosage: dosage ?? this.dosage,
       frequency: frequency ?? this.frequency,
       reminderTime: reminderTime ?? this.reminderTime,
+      mealInstruction: mealInstruction ?? this.mealInstruction,
       createdAt: createdAt ?? this.createdAt,
     );
   }

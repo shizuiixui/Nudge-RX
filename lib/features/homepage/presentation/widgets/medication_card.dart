@@ -20,7 +20,7 @@ class MedicationCard extends ConsumerWidget {
     final status = statusMap[medId] ?? MedicationStatus.pending;
 
     return Container(
-      padding: EdgeInsets.all(14.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -38,36 +38,22 @@ class MedicationCard extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 44.w,
-                height: 44.w,
-                decoration: BoxDecoration(
-                  color: status == MedicationStatus.taken
-                      ? Colors.green.withValues(alpha: 0.15)
-                      : status == MedicationStatus.skipped
-                          ? Colors.redAccent.withValues(alpha: 0.15)
-                          : _primaryBlue.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
+              SizedBox(
+                width: 48.w,
+                height: 48.w,
                 child: status == MedicationStatus.taken
                     ? Icon(
                         Icons.check_circle_rounded,
                         color: Colors.green,
-                        size: 26.sp,
+                        size: 36.sp,
                       )
                     : status == MedicationStatus.skipped
-                        ? Icon(
-                            Icons.cancel_rounded,
-                            color: Colors.redAccent,
-                            size: 26.sp,
-                          )
-                        : Padding(
-                            padding: EdgeInsets.all(6.w),
-                            child: Image.asset(
-                              med.categoryAssetPath,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+                    ? Icon(
+                        Icons.cancel_rounded,
+                        color: Colors.redAccent,
+                        size: 36.sp,
+                      )
+                    : Image.asset(med.categoryAssetPath, fit: BoxFit.contain),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -78,8 +64,8 @@ class MedicationCard extends ConsumerWidget {
                       med.name,
                       style: TextStyle(
                         fontFamily: 'Poppins',
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
                         color: Colors.black87,
                       ),
                     ),
@@ -87,15 +73,38 @@ class MedicationCard extends ConsumerWidget {
                       med.dosage ?? '',
                       style: TextStyle(
                         fontFamily: 'Poppins',
-                        fontSize: 12.sp,
-                        color: const Color(0xFF6C757D),
+                        fontSize: 13.sp,
+                        color: const Color(0xFF9E9E9E),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    Text(
+                      med.formattedTime,
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      med.mealInstruction ?? 'After Meal',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
                       ),
                     ),
                   ],
                 ),
               ),
+
+              // 3-dot menu
               PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert, size: 18.sp, color: Colors.black45),
+                icon: Icon(Icons.more_vert, size: 22.sp, color: Colors.black87),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 onSelected: (value) async {
@@ -113,7 +122,9 @@ class MedicationCard extends ConsumerWidget {
                       context: context,
                       builder: (context) => AlertDialog(
                         title: const Text('Delete Medication'),
-                        content: Text('Are you sure you want to delete ${med.name}?'),
+                        content: Text(
+                          'Are you sure you want to delete ${med.name}?',
+                        ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(false),
@@ -159,7 +170,11 @@ class MedicationCard extends ConsumerWidget {
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit_outlined, size: 18, color: Colors.black87),
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: Colors.black87,
+                        ),
                         SizedBox(width: 8),
                         Text('Edit'),
                       ],
@@ -169,9 +184,16 @@ class MedicationCard extends ConsumerWidget {
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline_rounded, size: 18, color: Colors.redAccent),
+                        Icon(
+                          Icons.delete_outline_rounded,
+                          size: 18,
+                          color: Colors.redAccent,
+                        ),
                         SizedBox(width: 8),
-                        Text('Delete', style: TextStyle(color: Colors.redAccent)),
+                        Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.redAccent),
+                        ),
                       ],
                     ),
                   ),
@@ -179,27 +201,11 @@ class MedicationCard extends ConsumerWidget {
               ),
             ],
           ),
-          SizedBox(height: 10.h),
-          Text(
-            med.formattedTime,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 12.sp,
-              color: Colors.black54,
-            ),
-          ),
-          Text(
-            med.frequencyDisplay,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
+
           SizedBox(height: 12.h),
-          Divider(height: 1, color: Colors.grey.shade200),
-          SizedBox(height: 10.h),
+          Divider(height: 1, color: Colors.grey.shade300),
+          SizedBox(height: 12.h),
+
           if (status == MedicationStatus.taken) ...[
             Row(
               children: [
@@ -229,7 +235,7 @@ class MedicationCard extends ConsumerWidget {
                     'Undo',
                     style: TextStyle(
                       fontFamily: 'Poppins',
-                      fontSize: 12.sp,
+                      fontSize: 13.sp,
                       color: const Color(0xFF6C757D),
                       decoration: TextDecoration.underline,
                     ),
@@ -266,7 +272,7 @@ class MedicationCard extends ConsumerWidget {
                     'Undo',
                     style: TextStyle(
                       fontFamily: 'Poppins',
-                      fontSize: 12.sp,
+                      fontSize: 13.sp,
                       color: const Color(0xFF6C757D),
                       decoration: TextDecoration.underline,
                     ),
@@ -324,7 +330,7 @@ class MedicationCard extends ConsumerWidget {
   }
 }
 
-// Action Button 
+// Action Button
 class ActionButton extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -346,14 +352,14 @@ class ActionButton extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 16.sp, color: color),
+          Icon(icon, size: 18.sp, color: color), // Slightly bumped up icon size
           SizedBox(width: 4.w),
           Text(
             label,
             style: TextStyle(
               fontFamily: 'Poppins',
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
+              fontSize: 14.sp, // Bumped up font size for buttons
+              fontWeight: FontWeight.w700,
               color: color,
             ),
           ),

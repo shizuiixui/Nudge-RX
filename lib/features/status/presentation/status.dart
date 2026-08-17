@@ -454,7 +454,14 @@ class _MedActivityRow extends StatelessWidget {
               color: statusColor.withOpacity(0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.medication, color: statusColor, size: 20.sp),
+            child: Padding(
+              padding: EdgeInsets.all(8.w),
+              child: Image.asset(
+                med.categoryAssetPath,
+                color: statusColor,
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
           SizedBox(width: 12.w),
 

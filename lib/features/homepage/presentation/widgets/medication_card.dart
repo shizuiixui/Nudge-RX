@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../inventory/models/medication_model.dart';
 import '../../../inventory/providers/medication_provider.dart';
+import '../../../inventory/models/medicine_form_data.dart';
+import '../../../inventory/presentation/add_edit_medicine_page.dart';
 
 class MedicationCard extends ConsumerWidget {
   final MedicationModel med;
@@ -47,19 +49,25 @@ class MedicationCard extends ConsumerWidget {
                           : _primaryBlue.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(
-                  status == MedicationStatus.taken
-                      ? Icons.check_circle_rounded
-                      : status == MedicationStatus.skipped
-                          ? Icons.cancel_rounded
-                          : Icons.medication_rounded,
-                  color: status == MedicationStatus.taken
-                      ? Colors.green
-                      : status == MedicationStatus.skipped
-                          ? Colors.redAccent
-                          : _primaryBlue,
-                  size: 26.sp,
-                ),
+                child: status == MedicationStatus.taken
+                    ? Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.green,
+                        size: 26.sp,
+                      )
+                    : status == MedicationStatus.skipped
+                        ? Icon(
+                            Icons.cancel_rounded,
+                            color: Colors.redAccent,
+                            size: 26.sp,
+                          )
+                        : Padding(
+                            padding: EdgeInsets.all(6.w),
+                            child: Image.asset(
+                              med.categoryAssetPath,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -86,7 +94,89 @@ class MedicationCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              Icon(Icons.more_vert, size: 18.sp, color: Colors.black45),
+              PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert, size: 18.sp, color: Colors.black45),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onSelected: (value) async {
+                  if (value == 'edit') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => AddEditMedicinePage(
+                          existing: MedicineFormData.fromModel(med),
+                        ),
+                      ),
+                    );
+                  } else if (value == 'delete') {
+                    if (med.id == null) return;
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Delete Medication'),
+                        content: Text('Are you sure you want to delete ${med.name}?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true && context.mounted) {
+                      try {
+                        await ref
+                            .read(medicationsProvider.notifier)
+                            .deleteMedication(med.id!);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${med.name} deleted successfully'),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Failed to delete: $e'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                        }
+                      }
+                    }
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined, size: 18, color: Colors.black87),
+                        SizedBox(width: 8),
+                        Text('Edit'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline_rounded, size: 18, color: Colors.redAccent),
+                        SizedBox(width: 8),
+                        Text('Delete', style: TextStyle(color: Colors.redAccent)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           SizedBox(height: 10.h),

@@ -323,6 +323,7 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
           : selectedDayNames.map((i) => dayLabels[i]).join(',');
 
       final med = MedicationModel(
+        id: _form.id,
         userId: userId,
         name: name,
         dosage: dosage,
@@ -330,12 +331,16 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
         reminderTime: _form.time,
       );
 
-      await ref.read(medicationsProvider.notifier).addMedication(med);
+      if (_isEdit) {
+        await ref.read(medicationsProvider.notifier).updateMedication(med);
+      } else {
+        await ref.read(medicationsProvider.notifier).addMedication(med);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$name added successfully!'),
+            content: Text(_isEdit ? '$name updated successfully!' : '$name added successfully!'),
             backgroundColor: _primaryBlue,
           ),
         );

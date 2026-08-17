@@ -80,6 +80,26 @@ class MedicationModel {
     return frequency!;
   }
 
+  String get categoryAssetPath {
+    final doseStr = dosage?.toLowerCase() ?? '';
+    if (doseStr.contains('mg/ml') || doseStr.endsWith('ml')) {
+      return 'assets/images/AddMedicine/Liquid.png';
+    }
+    if (doseStr.contains('drop') || doseStr.endsWith('%')) {
+      return 'assets/images/AddMedicine/Eyedrops.png';
+    }
+    if (doseStr.contains('sachet')) {
+      return 'assets/images/AddMedicine/Sachet.png';
+    }
+    if (doseStr.endsWith('g') && !doseStr.endsWith('mg') && !doseStr.endsWith('mcg')) {
+      return 'assets/images/AddMedicine/Sachet.png';
+    }
+    if (doseStr.contains('capsule')) {
+      return 'assets/images/AddMedicine/Capsules.png';
+    }
+    return 'assets/images/AddMedicine/Pills.png';
+  }
+
   MedicationModel copyWith({
     String? id,
     String? userId,

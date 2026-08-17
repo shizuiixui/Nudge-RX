@@ -15,6 +15,7 @@ class InventoryItem {
   final bool isCompleted;
   final IconData iconData;
   final Color iconColor;
+  final String? imagePath;
 
   const InventoryItem({
     required this.id,
@@ -26,6 +27,7 @@ class InventoryItem {
     this.isCompleted = false,
     this.iconData = Icons.medication_rounded,
     this.iconColor = const Color(0xFF38C2EE),
+    this.imagePath,
   });
 }
 
@@ -107,6 +109,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             iconColor: i % 2 == 0
                 ? const Color(0xFF38C2EE)
                 : const Color(0xFF8E44AD),
+            imagePath: med.categoryAssetPath,
           ),
         );
       }
@@ -338,7 +341,15 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               color: item.iconColor.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(item.iconData, color: item.iconColor, size: 26.sp),
+            child: item.imagePath != null
+                ? Padding(
+                    padding: EdgeInsets.all(8.w),
+                    child: Image.asset(
+                      item.imagePath!,
+                      fit: BoxFit.contain,
+                    ),
+                  )
+                : Icon(item.iconData, color: item.iconColor, size: 26.sp),
           ),
           SizedBox(width: 14.w),
           Expanded(

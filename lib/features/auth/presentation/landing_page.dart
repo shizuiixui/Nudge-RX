@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'login_page.dart';
 import '/core/widgets/primary_button.dart';
 
 class LandingPage extends StatefulWidget {

@@ -144,17 +144,8 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
             child: Container(
               width: 36.w,
               height: 36.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
+              alignment:
+                  Alignment.center,
               child: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 16.sp,
@@ -340,7 +331,11 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isEdit ? '$name updated successfully!' : '$name added successfully!'),
+            content: Text(
+              _isEdit
+                  ? '$name updated successfully!'
+                  : '$name added successfully!',
+            ),
             backgroundColor: _primaryBlue,
           ),
         );

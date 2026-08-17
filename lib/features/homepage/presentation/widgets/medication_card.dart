@@ -171,8 +171,8 @@ class MedicationCard extends ConsumerWidget {
                     child: Row(
                       children: [
                         Icon(
-                          Icons.edit_outlined,
-                          size: 18,
+                          Icons.edit,
+                          size: 20,
                           color: Colors.black87,
                         ),
                         SizedBox(width: 8),
@@ -185,8 +185,8 @@ class MedicationCard extends ConsumerWidget {
                     child: Row(
                       children: [
                         Icon(
-                          Icons.delete_outline_rounded,
-                          size: 18,
+                          Icons.delete,
+                          size: 20,
                           color: Colors.redAccent,
                         ),
                         SizedBox(width: 8),

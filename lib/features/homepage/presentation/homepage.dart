@@ -13,6 +13,8 @@ import '/core/widgets/custom_fab.dart';
 // Models & Providers
 import '../../inventory/models/medication_model.dart';
 import '../../inventory/providers/medication_provider.dart';
+import '../../inventory/providers/notifications_provider.dart';
+import 'notification_page.dart';
 
 // Local Widgets
 import 'widgets/medication_card.dart';
@@ -224,29 +226,49 @@ class _HomePageState extends ConsumerState<HomePage>
             ),
           ),
           // Notification bell
-          Stack(
-            children: [
-              Container(
-                width: 40.w,
-                height: 40.w,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.07),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const NotificationPage()),
+              );
+            },
+            child: Stack(
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.07),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.notifications,
+                    size: 20.sp,
+                    color: Colors.black87,
+                  ),
+                ),
+                if (ref.watch(hasUnreadNotificationsProvider))
+                  Positioned(
+                    top: 2.h,
+                    right: 2.w,
+                    child: Container(
+                      width: 9.w,
+                      height: 9.w,
+                      decoration: const BoxDecoration(
+                        color: Colors.redAccent,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.notifications_outlined,
-                  size: 20.sp,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
+                  ),
+              ],
+            ),
           ),
         ],
       ),

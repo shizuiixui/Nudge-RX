@@ -3,11 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../auth/providers/auth_provider.dart';
-import 'widgets/avatar_options_sheet.dart';
 import 'widgets/logout_dialog.dart';
 import 'widgets/notification_tile.dart';
 import 'widgets/profile_card.dart';
 import 'widgets/settings_tile.dart';
+import 'user_profile.dart';
+import 'change_password.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -30,18 +31,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           }
         },
       ),
-    );
-  }
-
-  void _showAvatarOptions(BuildContext context) {
-    AvatarOptionsSheet.show(
-      context,
-      onViewPicture: () {
-        // TODO: View picture action
-      },
-      onSelectPicture: () {
-        // TODO: Select picture action
-      },
     );
   }
 
@@ -76,7 +65,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 fullName: fullName,
                 email: email,
                 onLogout: () => _showLogoutConfirmation(context),
-                onAvatarTap: () => _showAvatarOptions(context),
+                onAvatarTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const UserProfilePage(),
+                    ),
+                  ).then((_) {
+                    setState(() {});
+                  });
+                },
               ),
               
               SizedBox(height: 24.h),
@@ -88,7 +85,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 icon: Icons.person,
                 title: 'User Profile',
                 onTap: () {
-                  // Action placeholder
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const UserProfilePage(),
+                    ),
+                  ).then((_) {
+                    setState(() {});
+                  });
                 },
               ),
               SizedBox(height: 16.h),
@@ -96,7 +99,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 icon: Icons.lock,
                 title: 'Change Password',
                 onTap: () {
-                  // Action placeholder
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ChangePasswordPage(),
+                    ),
+                  );
                 },
               ),
               SizedBox(height: 16.h),

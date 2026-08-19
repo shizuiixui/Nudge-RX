@@ -46,3 +46,4 @@ app.*.map.json
 
 # Secrets
 lib/core/constants/supabase_constants.dart
+.env

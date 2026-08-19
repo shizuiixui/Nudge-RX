@@ -149,7 +149,6 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
               alignment: Alignment.center,
               child: Icon(
                 Icons.arrow_back_ios_new_rounded,
-                size: 24.sp,
                 color: Colors.black87,
               ),
             ),

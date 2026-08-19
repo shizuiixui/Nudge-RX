@@ -24,20 +24,9 @@ class NotificationPage extends ConsumerWidget {
           onTap: () => Navigator.of(context).pop(),
           child: Container(
             margin: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
+            color: Colors.transparent, 
             child: Icon(
               Icons.arrow_back_ios_new_rounded,
-              size: 14.sp,
               color: Colors.black87,
             ),
           ),
@@ -115,7 +104,7 @@ class NotificationPage extends ConsumerWidget {
                 ],
               ),
               child: Icon(
-                Icons.notifications_off_outlined,
+                Icons.notifications_off_rounded,
                 size: 46.sp,
                 color: const Color(0xFFB0DCF0),
               ),
@@ -183,10 +172,7 @@ class _NotificationCard extends StatelessWidget {
   final NotificationItem notification;
   final VoidCallback onTap;
 
-  const _NotificationCard({
-    required this.notification,
-    required this.onTap,
-  });
+  const _NotificationCard({required this.notification, required this.onTap});
 
   String _formatTimeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);
@@ -214,7 +200,9 @@ class _NotificationCard extends StatelessWidget {
             ),
           ],
           border: Border.all(
-            color: notification.isRead ? Colors.transparent : const Color(0xFF38C2EE).withValues(alpha: 0.3),
+            color: notification.isRead
+                ? Colors.transparent
+                : const Color(0xFF38C2EE).withValues(alpha: 0.3),
             width: 1.5,
           ),
         ),

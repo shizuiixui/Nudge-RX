@@ -115,7 +115,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   label: 'Current Password',
                   hintText: 'Enter current password',
                   controller: _currentPasswordController,
-                  prefixIcon: Icons.lock_outline_rounded,
+                  prefixIcon: Icons.lock,
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -129,7 +129,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   label: 'New Password',
                   hintText: 'Enter new password',
                   controller: _newPasswordController,
-                  prefixIcon: Icons.lock_reset_rounded,
+                  prefixIcon: Icons.lock,
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -146,7 +146,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   label: 'Confirm New Password',
                   hintText: 'Re-enter new password',
                   controller: _confirmPasswordController,
-                  prefixIcon: Icons.lock_clock_rounded,
+                  prefixIcon: Icons.lock_clock,
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {

@@ -321,6 +321,7 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
         dosage: dosage,
         frequency: frequency,
         reminderTime: _form.time,
+        mealInstruction: _form.mealInstruction,
       );
 
       if (_isEdit) {

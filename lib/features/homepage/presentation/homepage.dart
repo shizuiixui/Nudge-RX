@@ -246,7 +246,7 @@ class _HomePageState extends ConsumerState<HomePage>
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          // Home tab content
+          // Index 0 — Home tab content
           _buildHomeContent(
             firstName,
             morningMeds,
@@ -254,7 +254,11 @@ class _HomePageState extends ConsumerState<HomePage>
             eveningMeds,
             statusMap,
           ),
+          // Index 1 — Add Medicine
+          const SizedBox.shrink(),
+          // Index 2 — Inventory
           const InventoryPage(),
+          // Index 3 — Profile
           const ProfilePage(),
         ],
       ),

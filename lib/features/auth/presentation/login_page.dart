@@ -214,7 +214,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         // Login Button
                         SizedBox(
                           width: double.infinity,
-                          height: 40.h,
+                          height: 52.h,
                           child: PrimaryButton(
                             text: authState.isLoading
                                 ? "Logging in..."

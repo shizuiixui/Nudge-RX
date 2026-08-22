@@ -54,10 +54,10 @@ class PrimaryButton extends StatelessWidget {
                 : Text(
                     text,
                     style: TextStyle(
-                      fontSize: fontSize,
-                      color: Colors.white,
                       fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
           ),

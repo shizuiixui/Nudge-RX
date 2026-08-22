@@ -82,7 +82,7 @@ class _LandingPageState extends State<LandingPage> {
               // "Get Started" Button
               SizedBox(
                 width: double.infinity,
-                height: 40.h,
+                height: 52.h,
                 child: PrimaryButton(
                   isLoading: _isLoading,
                   text: _isLoading ? "Loading..." : "Get Started",

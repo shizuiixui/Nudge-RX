@@ -7,10 +7,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../inventory/presentation/inventory.dart';
 import '../../inventory/presentation/add_edit_medicine_page.dart';
 import '../../inventory/presentation/scan_prescription_page.dart';
-import '../../status/presentation/status.dart';
 import '../../profile/presentation/profile.dart';
 import '/core/widgets/bottom_nav_bar.dart';
-import '/core/widgets/custom_fab.dart';
 
 // Models & Providers
 import '../../inventory/models/medication_model.dart';
@@ -137,18 +135,10 @@ class _HomePageState extends ConsumerState<HomePage>
             eveningMeds,
             statusMap,
           ), // Index 0
-          const Text('Scan Medicine Page', textAlign: TextAlign.center),
           const InventoryPage(), // Index 1
-          // const StatusPage(), // Index 2
-          const ProfilePage(), // Index 3
+          const ProfilePage(), // Index 2
         ],
       ),
-
-      /*
-      // FAB
-      floatingActionButton: const CustomFAB(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      */
 
       // Nav Bar
       bottomNavigationBar: BottomNavBar(

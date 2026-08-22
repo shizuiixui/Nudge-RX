@@ -223,7 +223,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
 
                       SizedBox(
                         width: double.infinity,
-                        height: 40.h,
+                        height: 52.h,
                         child: PrimaryButton(
                           isLoading: authState.isLoading,
                           text: authState.isLoading

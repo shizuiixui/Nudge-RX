@@ -141,10 +141,12 @@ class _HomePageState extends ConsumerState<HomePage>
         ],
       ),
 
+      /*
       // FAB
       floatingActionButton: const CustomFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
+      */
+      
       // Nav Bar
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,

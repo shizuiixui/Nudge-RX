@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Screens & Layout
 import '../../inventory/presentation/inventory.dart';
+import '../../inventory/presentation/add_edit_medicine_page.dart';
+import '../../inventory/presentation/scan_prescription_page.dart';
 import '../../status/presentation/status.dart';
 import '../../profile/presentation/profile.dart';
 import '/core/widgets/bottom_nav_bar.dart';
@@ -135,8 +137,9 @@ class _HomePageState extends ConsumerState<HomePage>
             eveningMeds,
             statusMap,
           ), // Index 0
+          const Text('Scan Medicine Page', textAlign: TextAlign.center),
           const InventoryPage(), // Index 1
-          const StatusPage(), // Index 2
+          // const StatusPage(), // Index 2
           const ProfilePage(), // Index 3
         ],
       ),
@@ -146,16 +149,122 @@ class _HomePageState extends ConsumerState<HomePage>
       floatingActionButton: const CustomFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       */
-      
+
       // Nav Bar
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
+          if (index == 1) {
+            _showAddOptions(context);
+            return;
+          }
           setState(() {
             _currentIndex = index;
           });
         },
       ),
+    );
+  }
+
+  // ── Add-medicine bottom sheet ──────────────────────────────────────
+  void _showAddOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFEAF6FB),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Container(
+                width: 40.w,
+                height: 4.h,
+                margin: EdgeInsets.only(bottom: 16.h),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+
+              // Option 1 – Scan
+              ListTile(
+                leading: Icon(
+                  Icons.document_scanner_rounded,
+                  color: _primaryBlue,
+                  size: 28.sp,
+                ),
+                title: Text(
+                  'Scan Prescription',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  'Let AI extract the details for you',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12.sp,
+                    color: const Color(0xFF6C757D),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _scanPrescription(context);
+                },
+              ),
+
+              const Divider(),
+
+              // Option 2 – Manual
+              ListTile(
+                leading: Icon(
+                  Icons.edit_note_rounded,
+                  color: _primaryBlue,
+                  size: 28.sp,
+                ),
+                title: Text(
+                  'Enter Manually',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  'Type in the medication details yourself',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12.sp,
+                    color: const Color(0xFF6C757D),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AddEditMedicinePage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Placeholder – replace with your actual scan logic
+  void _scanPrescription(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ScanPrescriptionPage()),
     );
   }
 

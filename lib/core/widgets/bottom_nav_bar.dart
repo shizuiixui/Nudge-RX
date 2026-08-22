@@ -52,7 +52,7 @@ class BottomNavBar extends StatelessWidget {
             height: 24,
           ),
           activeIcon: Image.asset(
-            'assets/images/navbar/AddMed_selected.png',
+            'assets/images/navbar/AddMed_Selected.png',
             width: 24,
             height: 24,
           ),

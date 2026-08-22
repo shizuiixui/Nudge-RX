@@ -5,11 +5,12 @@ import 'core/services/supabase_service.dart';
 import 'core/services/notification_service.dart';
 import 'features/auth/presentation/splash_screen.dart';
 
-// App Router
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nudge_rx/core/routes/app_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await SupabaseService.initialize();
   await NotificationService.initialize();
   runApp(const ProviderScope(child: MyApp()));

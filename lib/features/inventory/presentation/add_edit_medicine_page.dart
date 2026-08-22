@@ -1,11 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/medication_model.dart';
 import '../models/medicine_form_data.dart';
 import '../providers/medication_provider.dart';
+import '../services/ai_scanner_service.dart';
 import 'widgets/medicine_type_selector.dart';
 import 'widgets/medicine_input_fields.dart';
 import 'widgets/day_selector.dart';
@@ -50,6 +53,211 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
   }
 
   bool get _isEdit => widget.existing != null;
+
+  Future<void> _scanPrescription() async {
+    final ImagePicker picker = ImagePicker();
+    
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Scan Prescription',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined, color: _primaryBlue),
+                title: const Text('Take Photo', style: TextStyle(fontFamily: 'Poppins')),
+                onTap: () => Navigator.of(context).pop(ImageSource.camera),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined, color: _primaryBlue),
+                title: const Text('Choose from Gallery', style: TextStyle(fontFamily: 'Poppins')),
+                onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
+    final XFile? file = await picker.pickImage(source: source);
+    if (file == null) return;
+
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(_primaryBlue)),
+              SizedBox(width: 20),
+              Expanded(
+                child: Text(
+                  'Analyzing prescription with Gemini AI...',
+                  style: TextStyle(fontFamily: 'Poppins'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final medications = await AiScannerService.scanPrescription(File(file.path));
+      
+      if (mounted) Navigator.of(context).pop();
+
+      if (medications.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No medications found in the prescription.'),
+              backgroundColor: Colors.orangeAccent,
+            ),
+          );
+        }
+        return;
+      }
+
+      debugPrint('AI Scanner response: $medications');
+
+      // If multiple medications found, let user pick one
+      Map<String, dynamic> selected;
+      if (medications.length == 1) {
+        selected = medications.first;
+      } else {
+        final picked = await showModalBottomSheet<Map<String, dynamic>>(
+          context: context,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          builder: (context) => SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Select Medication',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    '${medications.length} medications found',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12.sp,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  ...medications.map((med) => ListTile(
+                    leading: Icon(Icons.medication_outlined, color: _primaryBlue),
+                    title: Text(
+                      med['name']?.toString() ?? 'Unknown',
+                      style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(
+                      '${med['milligrams'] ?? ''} ${med['type'] ?? ''} · ${med['dose'] ?? '1'}x · ${med['meal_instruction'] ?? ''}',
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp),
+                    ),
+                    onTap: () => Navigator.of(context).pop(med),
+                  )),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        if (picked == null) return;
+        selected = picked;
+      }
+
+      _applyScannedData(selected);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${selected['name']} scanned successfully!'),
+            backgroundColor: _primaryBlue,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.of(context).pop();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('AI Scan failed: $e'),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  void _applyScannedData(Map<String, dynamic> data) {
+    setState(() {
+      if (data['name'] != null) {
+        _nameCtrl.text = data['name'].toString();
+        _form.name = data['name'].toString();
+      }
+      if (data['milligrams'] != null && data['milligrams'].toString().isNotEmpty) {
+        _mgCtrl.text = data['milligrams'].toString();
+        _form.milligrams = data['milligrams'].toString();
+      }
+      if (data['dose'] != null) {
+        _doseCtrl.text = data['dose'].toString();
+        _form.dose = data['dose'].toString();
+      }
+      if (data['type'] != null) {
+        final typeStr = data['type'].toString().toLowerCase();
+        final matchedType = MedicineType.values.firstWhere(
+          (t) => t.name == typeStr,
+          orElse: () => MedicineType.pills,
+        );
+        _form.type = matchedType;
+      }
+      if (data['time'] != null) {
+        final timeStr = data['time'].toString();
+        final parts = timeStr.split(':');
+        if (parts.length >= 2) {
+          final h = int.tryParse(parts[0]) ?? 9;
+          final m = int.tryParse(parts[1]) ?? 0;
+          _form.time = TimeOfDay(hour: h, minute: m);
+        }
+      }
+      if (data['meal_instruction'] != null) {
+        _form.mealInstruction = data['meal_instruction'].toString();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,6 +362,14 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
             ),
           ),
           const Spacer(),
+          IconButton(
+            icon: Icon(
+              Icons.document_scanner_outlined,
+              color: _primaryBlue,
+              size: 22.sp,
+            ),
+            onPressed: _scanPrescription,
+          ),
         ],
       ),
     );

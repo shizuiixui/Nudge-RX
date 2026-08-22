@@ -45,6 +45,20 @@ class BottomNavBar extends StatelessWidget {
           label: 'Home',
         ),
 
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/images/navbar/AddMed.png',
+            width: 24,
+            height: 24,
+          ),
+          activeIcon: Image.asset(
+            'assets/images/navbar/AddMed_selected.png',
+            width: 24,
+            height: 24,
+          ),
+          label: 'Add Medicine',
+        ),
+
         // Inventory
         BottomNavigationBarItem(
           icon: Image.asset(
@@ -60,21 +74,6 @@ class BottomNavBar extends StatelessWidget {
           label: 'Inventory',
         ),
 
-        // Status
-        BottomNavigationBarItem(
-          icon: Image.asset(
-            'assets/images/navbar/Status.png',
-            width: 24,
-            height: 24,
-          ),
-          activeIcon: Image.asset(
-            'assets/images/navbar/Status_selected.png',
-            width: 24,
-            height: 24,
-          ),
-          label: 'Status',
-        ),
-
         // Profile
         BottomNavigationBarItem(
           icon: Image.asset(
@@ -87,7 +86,7 @@ class BottomNavBar extends StatelessWidget {
             width: 24,
             height: 24,
           ),
-          label: 'Settings',
+          label: 'Profile',
         ),
       ],
     );

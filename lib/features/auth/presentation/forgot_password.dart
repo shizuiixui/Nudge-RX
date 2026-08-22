@@ -260,7 +260,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPassword> {
                       SizedBox(height: 60.h),
                       SizedBox(
                         width: double.infinity,
-                        height: 50.h,
+                        height: 52.h,
                         child: PrimaryButton(
                           isLoading: authState.isLoading,
                           text: authState.isLoading
@@ -383,7 +383,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPassword> {
                   SizedBox(height: 40.h),
                   SizedBox(
                     width: double.infinity,
-                    height: 50.h,
+                    height: 52.h,
                     child: _isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : PrimaryButton(
@@ -535,7 +535,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPassword> {
                       SizedBox(height: 60.h),
                       SizedBox(
                         width: double.infinity,
-                        height: 50.h,
+                        height: 52.h,
                         child: PrimaryButton(
                           text: (_isLoading || authState.isLoading)
                               ? "Saving..."
@@ -587,7 +587,7 @@ class _ForgotPasswordState extends ConsumerState<ForgotPassword> {
                   SizedBox(height: 60.h),
                   SizedBox(
                     width: double.infinity,
-                    height: 50.h,
+                    height: 52.h,
                     child: PrimaryButton(
                       isLoading: _isLoading,
                       text: "Continue",

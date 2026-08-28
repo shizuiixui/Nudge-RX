@@ -6,12 +6,14 @@ class PrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String text;
   final bool isLoading;
+  final Color loadingColor;
 
   const PrimaryButton({
     super.key,
     required this.onPressed,
     required this.text,
     required this.isLoading,
+    this.loadingColor = Colors.white,
   });
 
   @override
@@ -50,13 +52,20 @@ class PrimaryButton extends StatelessWidget {
           // Button Text
           child: Center(
             child: isLoading
-                ? SizedBox(height: 24.h, width: 24.w, child: LoadingIndicator())
+                ? SizedBox(
+                    height: 22.h,
+                    width: 22.w,
+                    child: LoadingIndicator(
+                      color: loadingColor,
+                      strokeWidth: 2.5,
+                    ),
+                  )
                 : Text(
                     text,
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       color: Colors.white,
-                      fontSize: 16.sp,
+                      fontSize: fontSize,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

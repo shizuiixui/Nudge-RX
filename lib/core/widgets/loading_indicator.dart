@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 
 class LoadingIndicator extends StatelessWidget {
-  const LoadingIndicator({super.key});
+  final Color color;
+  final double strokeWidth;
+
+  const LoadingIndicator({
+    super.key,
+    this.color = const Color(0xFF808080),
+    this.strokeWidth = 4.0,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: CircularProgressIndicator(
-        color: const Color(0xFF808080),
-        strokeWidth: 4.0,
+        color: color,
+        strokeWidth: strokeWidth,
       ),
     );
   }

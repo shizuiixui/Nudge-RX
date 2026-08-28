@@ -21,14 +21,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   bool _pushNotificationsEnabled = true;
 
   void _showLogoutConfirmation(BuildContext context) {
+    final navigator = Navigator.of(context, rootNavigator: true);
     showDialog(
       context: context,
-      builder: (context) => LogoutDialog(
+      builder: (_) => LogoutDialog(
         onConfirm: () async {
           await ref.read(authProvider.notifier).signOut();
-          if (mounted) {
-            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-          }
+          navigator.pushNamedAndRemoveUntil('/login', (route) => false);
         },
       ),
     );

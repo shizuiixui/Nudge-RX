@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/medicine_form_data.dart';
 import '../services/ai_scanner_service.dart';
 import 'add_edit_medicine_page.dart';
+import 'widgets/scan_result_review_sheet.dart';
 
 class ScanPrescriptionPage extends ConsumerStatefulWidget {
   const ScanPrescriptionPage({super.key});
@@ -247,13 +248,39 @@ class _ScanPrescriptionPageState extends ConsumerState<ScanPrescriptionPage>
         selected = picked;
       }
 
-      // Build pre-filled form data and navigate to AddEditMedicinePage
-      final formData = _buildFormData(selected);
+      // Show the review sheet so the user can verify and add missing info
+      if (!mounted) return;
+      final reviewed = await showModalBottomSheet<Map<String, dynamic>>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: const Color(0xFFEAF6FB),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        builder: (_) => DraggableScrollableSheet(
+          initialChildSize: 0.75,
+          minChildSize: 0.5,
+          maxChildSize: 0.92,
+          expand: false,
+          builder: (_, scrollController) => ScanResultReviewSheet(
+            scannedData: selected,
+          ),
+        ),
+      );
+
+      if (reviewed == null) {
+        // User dismissed the review sheet
+        setState(() => _isProcessing = false);
+        return;
+      }
+
+      // Build pre-filled form data from reviewed result and navigate
+      final formData = _buildFormData(reviewed);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${selected['name']} scanned successfully!'),
+            content: Text('${reviewed['name']} added successfully!'),
             backgroundColor: _primaryBlue,
           ),
         );

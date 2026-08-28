@@ -49,7 +49,7 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
     super.dispose();
   }
 
-  bool get _isEdit => widget.existing != null;
+  bool get _isEdit => widget.existing?.id != null;
 
   @override
   Widget build(BuildContext context) {

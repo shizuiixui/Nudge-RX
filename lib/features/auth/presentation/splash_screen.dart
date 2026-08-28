@@ -13,7 +13,6 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Wait for 4 seconds then navigate to the home page
     Timer(const Duration(seconds: 4), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const LandingPage()),
@@ -32,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Image.asset('assets/images/Logo.png', width: 600),
             const SizedBox(height: 40),
             const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0XFF38C2EE)),
             ),
           ],
         ),

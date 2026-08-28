@@ -24,6 +24,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final navigator = Navigator.of(context, rootNavigator: true);
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (_) => LogoutDialog(
         onConfirm: () async {
           await ref.read(authProvider.notifier).signOut();

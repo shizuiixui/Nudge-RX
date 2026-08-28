@@ -10,8 +10,6 @@ class InventoryItem {
   final String id;
   final String name;
   final String dosageInfo;
-  final int takenCount;
-  final int totalCount;
   final bool isLowStock;
   final bool isCompleted;
   final IconData iconData;
@@ -23,8 +21,6 @@ class InventoryItem {
     required this.id,
     required this.name,
     required this.dosageInfo,
-    required this.takenCount,
-    required this.totalCount,
     this.isLowStock = false,
     this.isCompleted = false,
     this.iconData = Icons.medication_rounded,
@@ -53,8 +49,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       id: '1',
       name: 'Bewell-C',
       dosageInfo: '500 mg, 1 capsule',
-      takenCount: 16,
-      totalCount: 30,
       iconData: Icons.medication_liquid_rounded,
       iconColor: Color(0xFF38C2EE),
     ),
@@ -62,8 +56,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       id: '2',
       name: 'Biogesic',
       dosageInfo: '500 mg, 1 capsule',
-      takenCount: 1,
-      totalCount: 3,
       iconData: Icons.vaccines_rounded,
       iconColor: Color(0xFF8E44AD),
     ),
@@ -71,8 +63,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       id: '3',
       name: 'Centrum Advance',
       dosageInfo: '500 mg, 1 capsule',
-      takenCount: 25,
-      totalCount: 30,
       isLowStock: true,
       iconData: Icons.vaccines_rounded,
       iconColor: Color(0xFF27AE60),
@@ -101,8 +91,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             id: medId,
             name: med.name,
             dosageInfo: med.dosage ?? '500 mg, 1 capsule',
-            takenCount: (i * 7 + 12) % 30,
-            totalCount: 30,
             isCompleted: isTaken,
             isLowStock: i == 2 && !isTaken,
             iconData: i % 2 == 0

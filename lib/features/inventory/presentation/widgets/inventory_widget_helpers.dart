@@ -166,14 +166,8 @@ class InventoryCard extends ConsumerWidget {
     required this.item,
   });
 
-  static const _primaryBlue = Color(0xFF38C2EE);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final double progressRatio = item.totalCount > 0
-        ? (item.takenCount / item.totalCount).clamp(0.0, 1.0)
-        : 0.0;
-
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       decoration: BoxDecoration(
@@ -244,38 +238,6 @@ class InventoryCard extends ConsumerWidget {
               ],
             ),
           ),
-          SizedBox(width: 10.w),
-          SizedBox(
-            width: 44.w,
-            height: 44.w,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 42.w,
-                  height: 42.w,
-                  child: CircularProgressIndicator(
-                    value: progressRatio,
-                    strokeWidth: 3.5.w,
-                    backgroundColor: const Color(0xFFE0E0E0),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      _primaryBlue,
-                    ),
-                  ),
-                ),
-                Text(
-                  '${item.takenCount}/${item.totalCount}',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 9.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 6.w),
           PopupMenuButton<String>(
             icon: Icon(
               Icons.more_vert_rounded,

@@ -36,6 +36,7 @@ class _HomePageState extends ConsumerState<HomePage>
   late TabController _tabController;
   late DateTime _selectedDay;
   late DateTime _weekStart;
+  final Set<int> _visitedTabs = {0};
 
   int _currentIndex = 0;
 
@@ -43,12 +44,22 @@ class _HomePageState extends ConsumerState<HomePage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_handleTabSelection);
     _selectedDay = DateTime.now();
     _weekStart = _mondayOf(_selectedDay);
   }
 
+  void _handleTabSelection() {
+    if (!_visitedTabs.contains(_tabController.index)) {
+      setState(() {
+        _visitedTabs.add(_tabController.index);
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
     super.dispose();
   }
@@ -122,6 +133,8 @@ class _HomePageState extends ConsumerState<HomePage>
       setState(() {
         _selectedDay = picked;
         _weekStart = _mondayOf(picked);
+        _visitedTabs.clear();
+        _visitedTabs.add(_tabController.index);
       });
     }
   }
@@ -302,13 +315,19 @@ class _HomePageState extends ConsumerState<HomePage>
             monthLabel: _monthLabel(_selectedDay),
             dayName: _dayName,
             onPickMonth: _pickMonth,
-            onDaySelected: (day) => setState(() => _selectedDay = day),
+            onDaySelected: (day) => setState(() {
+              _selectedDay = day;
+              _visitedTabs.clear();
+              _visitedTabs.add(_tabController.index);
+            }),
           ),
           buildMedicationTabBar(
             tabController: _tabController,
+            morningMeds: morningMeds,
             afternoonMeds: afternoonMeds,
             eveningMeds: eveningMeds,
             statusMap: statusMap,
+            visitedTabs: _visitedTabs,
           ),
           Expanded(
             child: TabBarView(

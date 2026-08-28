@@ -216,9 +216,11 @@ Widget buildCalendarStrip({
 
 Widget buildMedicationTabBar({
   required TabController tabController,
+  required List<MedicationModel> morningMeds,
   required List<MedicationModel> afternoonMeds,
   required List<MedicationModel> eveningMeds,
   required Map<String, MedicationStatus> statusMap,
+  required Set<int> visitedTabs,
 }) {
   bool hasPending(List<MedicationModel> meds) =>
       meds.any((m) => statusMap[m.id ?? m.name] != MedicationStatus.taken);
@@ -246,13 +248,28 @@ Widget buildMedicationTabBar({
       labelColor: kPrimaryBlue,
       unselectedLabelColor: const Color(0xFF6C757D),
       tabs: [
-        const Tab(text: 'Morning'),
+        Tab(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Morning'),
+              if (morningMeds.isNotEmpty &&
+                  hasPending(morningMeds) &&
+                  !visitedTabs.contains(0)) ...[
+                SizedBox(width: 4.w),
+                _pendingDot(),
+              ],
+            ],
+          ),
+        ),
         Tab(
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text('Afternoon'),
-              if (afternoonMeds.isNotEmpty && hasPending(afternoonMeds)) ...[
+              if (afternoonMeds.isNotEmpty &&
+                  hasPending(afternoonMeds) &&
+                  !visitedTabs.contains(1)) ...[
                 SizedBox(width: 4.w),
                 _pendingDot(),
               ],
@@ -264,7 +281,9 @@ Widget buildMedicationTabBar({
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text('Evening'),
-              if (eveningMeds.isNotEmpty && hasPending(eveningMeds)) ...[
+              if (eveningMeds.isNotEmpty &&
+                  hasPending(eveningMeds) &&
+                  !visitedTabs.contains(2)) ...[
                 SizedBox(width: 4.w),
                 _pendingDot(),
               ],

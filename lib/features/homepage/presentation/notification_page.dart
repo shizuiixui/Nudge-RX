@@ -20,15 +20,11 @@ class NotificationPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: Container(
-            margin: EdgeInsets.all(10.w),
-            color: Colors.transparent, 
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: Colors.black87,
-            ),
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.black87,
           ),
         ),
         title: Text(
@@ -53,7 +49,7 @@ class NotificationPage extends ConsumerWidget {
                   fontFamily: 'Poppins',
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
-                  color: _primaryBlue,
+                  color: const Color(0xFF38C2EE),
                 ),
               ),
             ),

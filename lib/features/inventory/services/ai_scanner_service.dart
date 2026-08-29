@@ -7,10 +7,43 @@ import 'package:http/http.dart' as http;
 class AiScannerService {
   static const _baseUrl = 'https://generativelanguage.googleapis.com';
 
-  static String? _cachedModel;
+  static int _currentKeyIndex = 0;
+  static final Map<String, String> _cachedModels = {};
+
+  // Retrieves all configured Gemini API keys from env
+  static List<String> getApiKeys() {
+    final Set<String> keys = {};
+
+    // Check primary key
+    final primary = dotenv.env['GEMINI_API_KEY']?.trim();
+    if (primary != null && primary.isNotEmpty && primary != 'YOUR_GEMINI_API_KEY') {
+      keys.add(primary);
+    }
+
+    // Check numbered keys
+    for (int i = 2; i <= 10; i++) {
+      final k = dotenv.env['GEMINI_API_KEY_$i']?.trim();
+      if (k != null && k.isNotEmpty && k != 'YOUR_GEMINI_API_KEY') {
+        keys.add(k);
+      }
+    }
+
+    // Check comma-separated keys
+    final csvKeys = dotenv.env['GEMINI_API_KEYS'];
+    if (csvKeys != null && csvKeys.isNotEmpty) {
+      for (final rawKey in csvKeys.split(',')) {
+        final k = rawKey.trim();
+        if (k.isNotEmpty && k != 'YOUR_GEMINI_API_KEY') {
+          keys.add(k);
+        }
+      }
+    }
+
+    return keys.toList();
+  }
 
   static Future<String?> _findAvailableModel(String apiKey) async {
-    if (_cachedModel != null) return _cachedModel;
+    if (_cachedModels.containsKey(apiKey)) return _cachedModels[apiKey];
 
     for (final version in ['v1', 'v1beta']) {
       final url = Uri.parse('$_baseUrl/$version/models?key=$apiKey');
@@ -36,9 +69,9 @@ class AiScannerService {
                 final modelId = name.startsWith('models/')
                     ? name.substring(7)
                     : name;
-                debugPrint('AI Scanner: Found model "$modelId" on $version');
-                _cachedModel = '$version|$modelId';
-                return _cachedModel;
+                debugPrint('AI Scanner: Found model "$modelId" on $version for key');
+                _cachedModels[apiKey] = '$version|$modelId';
+                return _cachedModels[apiKey];
               }
             }
           }
@@ -50,18 +83,18 @@ class AiScannerService {
     return null;
   }
 
-  /// Scans prescription and returns a list of ALL medications found.
+  /// Scans prescription using round-robin rotational API keys with automatic failover.
   static Future<List<Map<String, dynamic>>> scanPrescription(
     File imageFile,
   ) async {
-    final apiKey = dotenv.env['GEMINI_API_KEY'];
-    if (apiKey == null || apiKey.isEmpty || apiKey == 'YOUR_GEMINI_API_KEY') {
+    final keys = getApiKeys();
+    if (keys.isEmpty) {
       throw Exception(
-        'Gemini API Key is not configured. Please set GEMINI_API_KEY in your .env file.',
+        'No Gemini API Key found. Please set GEMINI_API_KEY, GEMINI_API_KEY_2, etc. in your .env file.',
       );
     }
 
-    // Encode image (uses original bytes; compression is best-effort)
+    // Encode image once
     final imageBytes = await imageFile.readAsBytes();
     final base64Image = base64Encode(imageBytes);
 
@@ -70,26 +103,67 @@ class AiScannerService {
         Format: [{"name":"...","milligrams":"...","type":"pills|capsules|liquid|eyedrops|sachet","dose":"1","time":"08:00","meal_instruction":"Before Meal|After Meal|While Eating"}]
         If milligrams is not specified, use empty string. No explanation, no markdown, just JSON.''';
 
-    // Auto-discover available model
-    final discovered = await _findAvailableModel(apiKey);
-    if (discovered == null) {
-      throw Exception(
-        'No compatible Gemini model found for your API key. '
-        'Please verify your API key is valid at https://aistudio.google.com/apikey',
-      );
+    // Round-robin start index
+    final startIndex = _currentKeyIndex % keys.length;
+    _currentKeyIndex++;
+
+    // Attempt to scan with each key in rotational order
+    List<String> errors = [];
+    for (int attempt = 0; attempt < keys.length; attempt++) {
+      final keyIndex = (startIndex + attempt) % keys.length;
+      final currentKey = keys[keyIndex];
+      final keyLabel = 'Key #${keyIndex + 1}';
+
+      try {
+        debugPrint('AI Scanner: Attempting scan with $keyLabel (Attempt ${attempt + 1}/${keys.length})...');
+
+        // Auto-discover available model for this key
+        final discovered = await _findAvailableModel(currentKey);
+        if (discovered == null) {
+          throw Exception('No compatible model found for $keyLabel.');
+        }
+
+        final parts = discovered.split('|');
+        final apiVersion = parts[0];
+        final modelName = parts[1];
+
+        return await _callGeminiApiWithRedirect(
+          apiKey: currentKey,
+          apiVersion: apiVersion,
+          model: modelName,
+          base64Image: base64Image,
+          prompt: prompt,
+        );
+      } catch (e) {
+        final errMessage = e.toString();
+        debugPrint('AI Scanner: $keyLabel failed: $errMessage');
+        errors.add('$keyLabel: $errMessage');
+
+        // If not the last key, continue to failover
+        if (attempt < keys.length - 1) {
+          debugPrint('AI Scanner: Failing over to next rotational key...');
+        }
+      }
     }
 
-    final parts = discovered.split('|');
-    final apiVersion = parts[0];
-    final modelName = parts[1];
+    // If all keys failed
+    throw Exception(
+      'All configured Gemini API keys failed or exhausted quotas.\nErrors:\n${errors.join('\n')}',
+    );
+  }
 
-    debugPrint('AI Scanner: Using model "$modelName" on API $apiVersion');
-
+  static Future<List<Map<String, dynamic>>> _callGeminiApiWithRedirect({
+    required String apiKey,
+    required String apiVersion,
+    required String model,
+    required String base64Image,
+    required String prompt,
+  }) async {
     try {
       return await _callGeminiApi(
         apiKey: apiKey,
         apiVersion: apiVersion,
-        model: modelName,
+        model: model,
         base64Image: base64Image,
         prompt: prompt,
       );
@@ -99,7 +173,7 @@ class AiScannerService {
       if (redirectMatch != null) {
         final suggestedModel = redirectMatch.group(1)!;
         debugPrint('AI Scanner: Redirected to model "$suggestedModel"');
-        _cachedModel = '$apiVersion|$suggestedModel';
+        _cachedModels[apiKey] = '$apiVersion|$suggestedModel';
 
         return _callGeminiApi(
           apiKey: apiKey,

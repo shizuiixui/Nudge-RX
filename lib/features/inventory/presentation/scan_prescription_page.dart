@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/medicine_form_data.dart';
 import '../services/ai_scanner_service.dart';
+import '../services/scan_cooldown_service.dart';
 import 'add_edit_medicine_page.dart';
 import 'widgets/scan_result_review_sheet.dart';
 
@@ -26,18 +28,52 @@ class _ScanPrescriptionPageState extends ConsumerState<ScanPrescriptionPage>
   bool _isCameraReady = false;
   bool _isProcessing = false;
 
+  ScanCooldownStatus? _cooldownStatus;
+  Timer? _countdownTimer;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initCamera();
+    _refreshCooldownStatus();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _countdownTimer?.cancel();
     _cameraController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshCooldownStatus() async {
+    final status = await ScanCooldownService.getStatus();
+    if (!mounted) return;
+    setState(() {
+      _cooldownStatus = status;
+    });
+
+    _countdownTimer?.cancel();
+    if (status.isCoolingDown) {
+      _startCountdownTimer();
+    }
+  }
+
+  void _startCountdownTimer() {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      final status = await ScanCooldownService.getStatus();
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        _cooldownStatus = status;
+      });
+      if (!status.isCoolingDown) {
+        timer.cancel();
+      }
+    });
   }
 
   @override
@@ -98,7 +134,66 @@ class _ScanPrescriptionPageState extends ConsumerState<ScanPrescriptionPage>
     }
   }
 
+  void _showCooldownDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18.r),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.hourglass_top_rounded, color: const Color(0xFF38C2EE), size: 24.sp),
+            SizedBox(width: 8.w),
+            Text(
+              'Scanner Resting',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.bold,
+                fontSize: 18.sp,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'AI Scanner is resting (${_cooldownStatus?.formattedRemainingTime ?? "05:00"} remaining). In the meantime, you can still add medicines manually!',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 13.5.sp,
+            color: Colors.black87,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Wait'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const AddEditMedicinePage()),
+              );
+            },
+            icon: const Icon(Icons.edit_note_rounded, size: 18),
+            label: const Text('Enter Manually'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primaryBlue,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _capturePhoto() async {
+    if (_cooldownStatus?.isCoolingDown ?? false) {
+      _showCooldownDialog();
+      return;
+    }
+
     if (_cameraController == null ||
         !_cameraController!.value.isInitialized ||
         _isProcessing) {
@@ -121,6 +216,11 @@ class _ScanPrescriptionPageState extends ConsumerState<ScanPrescriptionPage>
   }
 
   Future<void> _pickFromGallery() async {
+    if (_cooldownStatus?.isCoolingDown ?? false) {
+      _showCooldownDialog();
+      return;
+    }
+
     if (_isProcessing) return;
 
     final picker = ImagePicker();
@@ -178,6 +278,10 @@ class _ScanPrescriptionPageState extends ConsumerState<ScanPrescriptionPage>
         setState(() => _isProcessing = false);
         return;
       }
+
+      // Record successful scan ONLY when medications were successfully extracted
+      await ScanCooldownService.recordSuccessfulScan();
+      _refreshCooldownStatus();
 
       debugPrint('AI Scanner response: $medications');
 
@@ -358,11 +462,14 @@ class _ScanPrescriptionPageState extends ConsumerState<ScanPrescriptionPage>
             // Top bar (back + title + gallery button)
             _buildTopBar(),
 
+            // Remaining scans badge
+            _buildRemainingScansBadge(),
+
             // Scanner overlay frame
             _buildScannerOverlay(),
 
-            // Bottom capture button
-            _buildCaptureButton(),
+            // Bottom capture / cooldown resting area
+            _buildCaptureArea(),
 
             // Processing overlay
             if (_isProcessing) _buildProcessingOverlay(),
@@ -465,7 +572,170 @@ class _ScanPrescriptionPageState extends ConsumerState<ScanPrescriptionPage>
     );
   }
 
-  Widget _buildCaptureButton() {
+  Widget _buildRemainingScansBadge() {
+    final isCooling = _cooldownStatus?.isCoolingDown ?? false;
+    final remaining = _cooldownStatus?.remainingScans ?? ScanCooldownService.maxScans;
+
+    return Positioned(
+      top: 62.h,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+          decoration: BoxDecoration(
+            color: isCooling
+                ? const Color(0xFFE53935).withValues(alpha: 0.85)
+                : Colors.black.withValues(alpha: 0.55),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+              color: isCooling
+                  ? Colors.redAccent.withValues(alpha: 0.5)
+                  : Colors.white24,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isCooling
+                    ? Icons.hourglass_top_rounded
+                    : Icons.bolt_rounded,
+                color: isCooling ? Colors.white : Colors.amber,
+                size: 15.sp,
+              ),
+              SizedBox(width: 6.w),
+              Text(
+                isCooling
+                    ? 'Cooldown: ${_cooldownStatus?.formattedRemainingTime ?? "05:00"}'
+                    : '$remaining/${ScanCooldownService.maxScans} scans remaining',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCaptureArea() {
+    final isCooling = _cooldownStatus?.isCoolingDown ?? false;
+
+    if (isCooling) {
+      return Positioned(
+        bottom: 24.h,
+        left: 20.w,
+        right: 20.w,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B).withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+              color: const Color(0xFF38C2EE).withValues(alpha: 0.6),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.r),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF38C2EE).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.pause_circle_filled_rounded,
+                      color: const Color(0xFF38C2EE),
+                      size: 24.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'AI Scanner is resting (${_cooldownStatus?.formattedRemainingTime ?? "05:00"} remaining)',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 12.5.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          'In the meantime, you can still add medicines manually!',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 11.5.sp,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 14.h),
+              SizedBox(
+                width: double.infinity,
+                height: 44.h,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (_) => const AddEditMedicinePage(),
+                      ),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.edit_note_rounded,
+                    size: 20.sp,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    'Enter Manually',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF38C2EE),
+                    foregroundColor: Colors.white,
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Positioned(
       bottom: 40.h,
       left: 0,

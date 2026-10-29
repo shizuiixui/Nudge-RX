@@ -84,6 +84,17 @@ class MedicationModel {
     return frequency!;
   }
 
+  /// Checks if the medication is scheduled for a given DateTime.
+  bool isScheduledForDate(DateTime date) {
+    if (frequency == null || frequency!.isEmpty || frequency == 'Daily') {
+      return true;
+    }
+    const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final weekdayLabel = dayLabels[date.weekday - 1]; // date.weekday is 1 (Mon) .. 7 (Sun)
+    final days = frequency!.split(',').map((d) => d.trim()).toList();
+    return days.contains(weekdayLabel);
+  }
+
   String get categoryAssetPath {
     final doseStr = dosage?.toLowerCase() ?? '';
     if (doseStr.contains('mg/ml') || doseStr.endsWith('ml')) {

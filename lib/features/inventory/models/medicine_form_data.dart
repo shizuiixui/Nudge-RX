@@ -133,9 +133,9 @@ class MedicineFormData {
 
     // Parse frequency to days
     Set<int> selectedDays = {};
-    const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     if (model.frequency == 'Daily') {
-      selectedDays = {0, 1, 2, 3, 4};
+      selectedDays = {0, 1, 2, 3, 4, 5, 6};
     } else if (model.frequency != null && model.frequency!.isNotEmpty) {
       final days = model.frequency!.split(',');
       for (final d in days) {

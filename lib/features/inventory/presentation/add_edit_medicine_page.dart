@@ -309,7 +309,7 @@ class _AddEditMedicinePageState extends ConsumerState<AddEditMedicinePage> {
       // Build frequency string from selected days
       const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       final selectedDayNames = _form.selectedDays.toList()..sort();
-      final frequency = selectedDayNames.length == 5
+      final frequency = selectedDayNames.length == 7
           ? 'Daily'
           : selectedDayNames.map((i) => dayLabels[i]).join(',');
 

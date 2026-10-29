@@ -248,9 +248,20 @@ class _HomePageState extends ConsumerState<HomePage>
   @override
   Widget build(BuildContext context) {
     final firstName = ref.watch(firstNameProvider);
-    final morningMeds = ref.watch(morningMedsProvider);
-    final afternoonMeds = ref.watch(afternoonMedsProvider);
-    final eveningMeds = ref.watch(eveningMedsProvider);
+    final allMeds = ref.watch(medicationsProvider).valueOrNull ?? [];
+    final medsForDay = allMeds
+        .where((m) => m.isScheduledForDate(_selectedDay))
+        .toList();
+
+    final morningMeds = medsForDay
+        .where((m) => m.timeCategory == 'morning')
+        .toList();
+    final afternoonMeds = medsForDay
+        .where((m) => m.timeCategory == 'afternoon')
+        .toList();
+    final eveningMeds = medsForDay
+        .where((m) => m.timeCategory == 'evening')
+        .toList();
     final statusMap = ref.watch(medicationStatusProvider);
 
     return Scaffold(

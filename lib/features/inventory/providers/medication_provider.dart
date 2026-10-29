@@ -26,9 +26,13 @@ class MedicationsNotifier extends AsyncNotifier<List<MedicationModel>> {
     final repo = ref.read(medicationRepositoryProvider);
     final saved = await repo.addMedication(med);
     await NotificationService.scheduleMedicationReminder(saved);
+    final isDaily = saved.frequency == null || saved.frequency!.isEmpty || saved.frequency == 'Daily';
+    final scheduleDesc = isDaily
+        ? 'Scheduled daily reminder'
+        : 'Scheduled reminder for ${saved.frequency}';
     ref.read(notificationsProvider.notifier).addNotification(
           title: 'New Medication Added 💊',
-          body: 'Scheduled daily reminder for ${saved.name} at ${saved.formattedTime}.',
+          body: '$scheduleDesc for ${saved.name} at ${saved.formattedTime}.',
         );
     final current = state.valueOrNull ?? [];
     state = AsyncData([...current, saved]);
@@ -38,9 +42,13 @@ class MedicationsNotifier extends AsyncNotifier<List<MedicationModel>> {
     final repo = ref.read(medicationRepositoryProvider);
     final updated = await repo.updateMedication(med);
     await NotificationService.scheduleMedicationReminder(updated);
+    final isDaily = updated.frequency == null || updated.frequency!.isEmpty || updated.frequency == 'Daily';
+    final scheduleDesc = isDaily
+        ? 'daily'
+        : updated.frequency!;
     ref.read(notificationsProvider.notifier).addNotification(
           title: 'Medication Updated ✏️',
-          body: 'Updated reminder settings for ${updated.name}.',
+          body: 'Updated reminder settings ($scheduleDesc at ${updated.formattedTime}) for ${updated.name}.',
         );
     final current = state.valueOrNull ?? [];
     state = AsyncData([

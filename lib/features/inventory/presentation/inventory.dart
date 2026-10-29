@@ -44,31 +44,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
-  final List<InventoryItem> _sampleItems = const [
-    InventoryItem(
-      id: '1',
-      name: 'Bewell-C',
-      dosageInfo: '500 mg, 1 capsule',
-      iconData: Icons.medication_liquid_rounded,
-      iconColor: Color(0xFF38C2EE),
-    ),
-    InventoryItem(
-      id: '2',
-      name: 'Biogesic',
-      dosageInfo: '500 mg, 1 capsule',
-      iconData: Icons.vaccines_rounded,
-      iconColor: Color(0xFF8E44AD),
-    ),
-    InventoryItem(
-      id: '3',
-      name: 'Centrum Advance',
-      dosageInfo: '500 mg, 1 capsule',
-      isLowStock: true,
-      iconData: Icons.vaccines_rounded,
-      iconColor: Color(0xFF27AE60),
-    ),
-  ];
-
   @override
   void dispose() {
     _searchController.dispose();
@@ -81,31 +56,27 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
   ) {
     List<InventoryItem> items = [];
 
-    if (userMeds.isNotEmpty) {
-      for (int i = 0; i < userMeds.length; i++) {
-        final med = userMeds[i];
-        final medId = med.id ?? med.name;
-        final isTaken = statusMap[medId] == MedicationStatus.taken;
-        items.add(
-          InventoryItem(
-            id: medId,
-            name: med.name,
-            dosageInfo: med.dosage ?? '500 mg, 1 capsule',
-            isCompleted: isTaken,
-            isLowStock: i == 2 && !isTaken,
-            iconData: i % 2 == 0
-                ? Icons.medication_rounded
-                : Icons.vaccines_rounded,
-            iconColor: i % 2 == 0
-                ? const Color(0xFF38C2EE)
-                : const Color(0xFF8E44AD),
-            imagePath: med.categoryAssetPath,
-            medication: med,
-          ),
-        );
-      }
-    } else {
-      items = List.from(_sampleItems);
+    for (int i = 0; i < userMeds.length; i++) {
+      final med = userMeds[i];
+      final medId = med.id ?? med.name;
+      final isTaken = statusMap[medId] == MedicationStatus.taken;
+      items.add(
+        InventoryItem(
+          id: medId,
+          name: med.name,
+          dosageInfo: med.dosage ?? '',
+          isCompleted: isTaken,
+          isLowStock: false,
+          iconData: i % 2 == 0
+              ? Icons.medication_rounded
+              : Icons.vaccines_rounded,
+          iconColor: i % 2 == 0
+              ? const Color(0xFF38C2EE)
+              : const Color(0xFF8E44AD),
+          imagePath: med.categoryAssetPath,
+          medication: med,
+        ),
+      );
     }
 
     items = items.where((item) => item.isCompleted == !_showActive).toList();
